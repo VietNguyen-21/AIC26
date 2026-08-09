@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aic2026-wp09"
+version = "0.1.0"
+description = "AIC 2026 exact-frame refinement"
+requires-python = ">=3.11"
+dependencies = ["PyYAML>=6"]
+
+[project.optional-dependencies]
+gpu = ["av>=12", "numpy>=1.26", "torch>=2.4", "transformers>=4.57"]
+dev = ["pytest>=8"]
+
+[project.scripts]
+wp09 = "wp09.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"
+
+[tool.setuptools.packages.find]
+where = ["src"]

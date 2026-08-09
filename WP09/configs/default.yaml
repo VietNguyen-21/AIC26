@@ -1,0 +1,15 @@
+wp09:
+  default_radius_ms: 5000
+  coarse_sample_fps: 2
+  dense_radius_ms: 500
+  dense_sample_fps: 24
+  hypothesis_limit: 5
+  refiner_model: google/siglip2-base-patch16-224
+  batch_size: 1
+  failure_mode: manual_only
+  min_radius_ms: 2000
+  max_radius_ms: 8000
+  dense_seed_count: 1
+  stable_variance_penalty: 0.25
+  decoder_config: pyav-original-pts-v1
+  config_version: wp09-v1
