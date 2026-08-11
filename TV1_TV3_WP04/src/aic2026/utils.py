@@ -10,9 +10,21 @@ import re
 import shutil
 import subprocess
 import tempfile
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Sequence
+
+
+def _windows_safe_replace(src: Path, dst: Path, retries: int = 5, delay: float = 0.1) -> None:
+    for attempt in range(retries):
+        try:
+            os.replace(src, dst)
+            return
+        except PermissionError:
+            if attempt == retries - 1:
+                raise
+            time.sleep(delay)
 
 
 def utcnow_iso() -> str:
@@ -51,7 +63,7 @@ def _atomic_replace_bytes(path: str | Path, payload: bytes) -> None:
             handle.write(payload)
             handle.flush()
             os.fsync(handle.fileno())
-        os.replace(temporary, target)
+        _windows_safe_replace(temporary, target)
     except Exception:
         temporary.unlink(missing_ok=True)
         raise
@@ -110,7 +122,7 @@ def write_parquet_optional(path: str | Path, rows: Sequence[dict[str, Any]]) -> 
     temporary = Path(temporary_name)
     try:
         pq.write_table(pa.Table.from_pylist(list(rows)), temporary)
-        os.replace(temporary, target)
+        _windows_safe_replace(temporary, target)
     except Exception:
         temporary.unlink(missing_ok=True)
         raise
@@ -134,7 +146,7 @@ def atomic_cv2_imwrite(path: str | Path, image, params: Sequence[int] | None = N
         ok = cv2.imwrite(str(temporary), image, list(params or []))
         if not ok:
             raise RuntimeError(f"Could not write image: {target}")
-        os.replace(temporary, target)
+        _windows_safe_replace(temporary, target)
     except Exception:
         temporary.unlink(missing_ok=True)
         raise
