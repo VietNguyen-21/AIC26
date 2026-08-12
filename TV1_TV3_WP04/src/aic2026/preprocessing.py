@@ -271,6 +271,7 @@ def _execute_module(
         if cleanup is not None:
             cleanup()
         started_at = utcnow_iso()
+        print(f"[{started_at[11:19]}] ➔ Bắt đầu module: {module_name} (Video: {video_id})", flush=True)
         registry.begin_module(
             run_id,
             video_id,
@@ -296,6 +297,7 @@ def _execute_module(
             registry.complete_module(
                 run_id, video_id, module_name, fingerprint, details=details
             )
+            print(f"[{utcnow_iso()[11:19]}] ✔ Hoàn thành module: {module_name} (Video: {video_id})", flush=True)
             return ModuleResult(value, fingerprint, True, decision.reason)
         except Exception as exc:
             registry.fail_module(
@@ -306,6 +308,7 @@ def _execute_module(
                 exc,
                 details={"decision_reason": decision.reason},
             )
+            print(f"[{utcnow_iso()[11:19]}] ❌ LỖI module: {module_name} (Video: {video_id}) - {type(exc).__name__}: {exc}", flush=True)
             return ModuleResult(
                 None,
                 fingerprint,
@@ -549,8 +552,10 @@ def run_preprocessing(
             for row in accepted
         }
 
-        for record in accepted:
+        total_accepted = len(accepted)
+        for index, record in enumerate(accepted):
             video_id = record.video_id
+            print(f"\n[{utcnow_iso()[11:19]}] === Đang xử lý video: {video_id} ({index + 1}/{total_accepted}) ===", flush=True)
             source_sha = record.source_sha256
             module_fps = fingerprints[video_id]
 
