@@ -1,8 +1,9 @@
-# Install the CUDA build of torch/torchvision first for the target GPU, then:
-#   git clone https://github.com/microsoft/unilm.git third_party/unilm
-#   git -C third_party/unilm checkout 833df7e7832e5064a281131ee64a481afa8e5b95
-#   <beit3-python> -m pip install -r third_party/unilm/beit3/requirements.txt
-# WP03 imports the checkout through WP03_BEIT3_SOURCE_DIR; do not use a moving main/master checkout.
+# Windows inference dependencies for the isolated BEiT-3 worker.
+# Install a CUDA build of torch/torchvision for the target GPU before this file.
+# Clone and pin UniLM separately; WP03 imports it through WP03_BEIT3_SOURCE_DIR.
+# Do NOT run `pip install -r third_party/unilm/beit3/requirements.txt` for WP03
+# inference. That training/evaluation requirements file pulls legacy DeepSpeed,
+# which is unnecessary here and does not build reliably on modern Windows Python.
 timm==0.4.12
 torchscale==0.2.0
 transformers>=4.45,<5

@@ -1,4 +1,5 @@
 .venv/
+.venvs/
 .pytest_cache/
 .pytest-tmp*/
 pytest-cache-files-*/
@@ -12,3 +13,4 @@ jobs/
 model-cache/
 model-locks/*.json
 !model-locks/.gitkeep
+third_party/

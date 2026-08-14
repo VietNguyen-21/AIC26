@@ -28,6 +28,72 @@ with `source: "visual"`. It never changes TV1 mapping data.
 | `metaclip2` | `facebook/metaclip-2-worldwide-huge-quickgelu` | `c139061af7b10fdb2e754b60d2b1182a3d5526c2` |
 | `perception` | `facebook/PE-Core-B16-224` | `a16450b46fef32363459920c2685a1b4ef13dcd9` |
 
+## BEiT-3 Windows setup for Viet (RTX 5070 Ti 12 GB)
+
+Run these commands from the `WP03` directory. Here, `--runtime-root .` means
+that `.venvs/`, `third_party/`, `model-cache/`, and `model-locks/` are local to
+this checkout. They are gitignored and must not be committed.
+
+1. Activate the dedicated BEiT-3 environment and install WP03 inference
+   dependencies. Install a CUDA-capable Torch/Torchvision build suitable for
+   the RTX 5070 Ti in this environment first. Do **not** install
+   `third_party/unilm/beit3/requirements.txt`: it is an old training/evaluation
+   dependency set that installs `deepspeed==0.4.0`, which WP03 inference does
+   not use and which fails to build with modern Windows Python/Torch.
+
+   ```powershell
+   .\.venvs\beit3\Scripts\Activate.ps1
+   python -m pip install --upgrade pip
+   python -m pip install -e .
+   python -m pip install -r envs\beit3.txt
+   ```
+
+2. Clone UniLM only when it is absent. If it already exists, it must be clean
+   before checkout; do not reset or delete another member's edits automatically.
+
+   ```powershell
+   if (-not (Test-Path .\third_party\unilm\.git)) {
+     git clone --depth 1 https://github.com/microsoft/unilm.git third_party\unilm
+   }
+   git -C third_party\unilm status --short
+   # Continue only when the command above prints nothing.
+   git -C third_party\unilm fetch --depth 1 origin 833df7e7832e5064a281131ee64a481afa8e5b95
+   git -C third_party\unilm checkout --detach 833df7e7832e5064a281131ee64a481afa8e5b95
+   git -C third_party\unilm rev-parse HEAD
+   ```
+
+   The last command must print
+   `833df7e7832e5064a281131ee64a481afa8e5b95`. A line such as
+   `M beit3/utils.py` means the checkout has a local modification; preserve it
+   and resolve its owner before continuing.
+
+3. Confirm CUDA and the exact UniLM retrieval model registration before
+   downloading/building the corpus. This is a fast failure gate for the
+   dedicated environment.
+
+   ```powershell
+   python -c "import torch, timm, torchscale, sentencepiece, transformers; assert torch.cuda.is_available(); print('torch=', torch.__version__, 'cuda=', torch.version.cuda, 'gpu=', torch.cuda.get_device_name(0))"
+   $env:PYTHONPATH = "$(Resolve-Path .\third_party\unilm\beit3)"
+   python -c "import modeling_finetune; from timm.models import is_model; assert is_model('beit3_base_patch16_384_retrieval'); print('BEiT-3 retrieval import OK')"
+   Remove-Item Env:PYTHONPATH
+   ```
+
+4. Download the official checkpoint and SentencePiece model, verify the
+   checkpoint size, then create its local lock. Do not put either downloaded
+   file in Git.
+
+   ```powershell
+   New-Item -ItemType Directory -Force .\model-cache\beit3, .\model-locks | Out-Null
+   Invoke-WebRequest -Uri https://github.com/addf400/files/releases/download/beit3/beit3_base_patch16_384_coco_retrieval.pth -OutFile .\model-cache\beit3\beit3_base_patch16_384_coco_retrieval.pth
+   Invoke-WebRequest -Uri https://github.com/addf400/files/releases/download/beit3/beit3.spm -OutFile .\model-cache\beit3\beit3.spm
+   if ((Get-Item .\model-cache\beit3\beit3_base_patch16_384_coco_retrieval.pth).Length -ne 445025515) { throw 'BEiT-3 checkpoint size is incorrect; delete it and download again.' }
+   python -m wp03 lock-model --model beit3 --checkpoint .\model-cache\beit3\beit3_base_patch16_384_coco_retrieval.pth --lock-path .\model-locks\beit3.json
+   ```
+
+5. The initial smoke configuration uses BEiT-3 batch size `4` for the 12 GB
+   RTX 5070 Ti. WP03 retries once at a smaller batch on CUDA OOM and falls back
+   from `bfloat16` to `float16` when the runtime reports unsupported BF16.
+
 Each GPU worker has an isolated environment configured by
 `configs/runtime.windows.yaml` or `configs/runtime.linux.yaml`. Install only
 the corresponding `envs/<model>.txt` into that environment; do not install all
