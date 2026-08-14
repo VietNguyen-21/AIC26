@@ -138,3 +138,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("request_path", type=Path)
     args = parser.parse_args(argv)
     return run_worker(Adapter.from_environment(), args.request_path)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
