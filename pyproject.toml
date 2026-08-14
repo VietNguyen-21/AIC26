@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tv4"
+version = "0.1.0"
+description = "AIC 2026 - TV4: Query Router, Multimodal Fusion, KIS/VQA/TRAKE (WP07, WP10, WP11, WP12)"
+requires-python = ">=3.10"
+dependencies = ["PyYAML>=6.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
