@@ -12,6 +12,7 @@ from .common import run_worker
 
 REVISION = "a16450b46fef32363459920c2685a1b4ef13dcd9"
 MODEL_ID = "facebook/PE-Core-B16-224"
+MODEL_CONFIG_NAME = "PE-Core-B16-224"
 OFFICIAL_URL = f"https://huggingface.co/{MODEL_ID}"
 
 
@@ -52,7 +53,7 @@ class Adapter:
             revision=REVISION,
         )
         self._model = pe.CLIP.from_config(
-            MODEL_ID, pretrained=True, checkpoint_path=checkpoint_path
+            MODEL_CONFIG_NAME, pretrained=True, checkpoint_path=checkpoint_path
         ).to(device="cuda", dtype=self._torch_dtype()).eval()
         self._preprocess = transforms.get_image_transform(self._model.image_size)
         self._tokenizer = transforms.get_text_tokenizer(self._model.context_length)

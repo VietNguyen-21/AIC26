@@ -94,6 +94,17 @@ this checkout. They are gitignored and must not be committed.
    RTX 5070 Ti. WP03 retries once at a smaller batch on CUDA OOM and falls back
    from `bfloat16` to `float16` when the runtime reports unsupported BF16.
 
+6. After receiving an updated WP03 checkout, refresh the dependencies in each
+   isolated worker environment. In particular, BGE-VL and MetaCLIP2 need
+   `sympy` for their Transformers/Torch imports; installing it only in the
+   coordinator environment does not fix their subprocesses.
+
+   ```powershell
+   .\.venvs\bge_vl\Scripts\python.exe -m pip install -r envs\bge_vl.txt
+   .\.venvs\metaclip2\Scripts\python.exe -m pip install -r envs\metaclip2.txt
+   .\.venvs\perception\Scripts\python.exe -m pip install -r envs\perception.txt
+   ```
+
 Each GPU worker has an isolated environment configured by
 `configs/runtime.windows.yaml` or `configs/runtime.linux.yaml`. Install only
 the corresponding `envs/<model>.txt` into that environment; do not install all
