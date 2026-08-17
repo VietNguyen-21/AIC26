@@ -9,11 +9,14 @@ model stacks installed.
 from __future__ import annotations
 
 import json
+import logging
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
 from ..contracts import SearchCandidate
+
+logger = logging.getLogger(__name__)
 
 
 class TV2VisualClientError(RuntimeError):
@@ -57,6 +60,15 @@ class TV2VisualClient:
         if proc.returncode != 0:
             # Degrade gracefully: visual branch unavailable (e.g. BEiT-3
             # locked pending validation) should not abort the whole query.
+            # But log the failure loudly — previously this returned [] with
+            # proc.stderr discarded entirely, so a persistently crashing
+            # WP03 subprocess (bad checkpoint, GPU OOM, ...) in production
+            # showed up only as "visual results are always empty", with no
+            # trace to debug from beyond comparing fusion output.
+            logger.error(
+                "wp03 search failed (query_id=%s, returncode=%s): %s",
+                query_id, proc.returncode, (proc.stderr or "").strip()[:2000],
+            )
             return []
         try:
             payload = json.loads(proc.stdout)

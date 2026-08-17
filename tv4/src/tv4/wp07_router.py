@@ -96,7 +96,18 @@ def split_trake_events(query_text: str) -> list[str]:
 
 
 def _looks_like_intro(fragment: str) -> bool:
-    return bool(re.match(r"^(tìm|find|xác định|liệt kê)\b", fragment, re.I)) and ":" in fragment or fragment.endswith(":")
+    # `and` binds tighter than `or`, so the original
+    # `keyword_match and has_colon or ends_with_colon` actually evaluated as
+    # `(keyword_match and has_colon) or ends_with_colon` — the trailing
+    # `or ends_with_colon` made the keyword check meaningless: ANY fragment
+    # ending in ":" (e.g. a legitimate TRAKE event that happens to end with
+    # a colon) was misclassified as an intro and dropped from the event
+    # list. The keyword prefix is what actually distinguishes an intro
+    # ("Tìm đoạn video: ...") from a real event, so require it always;
+    # having a colon (anywhere, including at the end) is the secondary
+    # signal.
+    starts_with_keyword = bool(re.match(r"^(tìm|find|xác định|liệt kê)\b", fragment, re.I))
+    return starts_with_keyword and ":" in fragment
 
 
 def route_trake(query_text: str, events: list[str] | None = None, *, query_id: str | None = None, limit: int = 100) -> RouteDecision:
