@@ -97,7 +97,13 @@ def answer_query(
     raw_answer = engine.answer(question, evidence)
     normalized = normalize_answer(raw_answer, language=language)
     verified = engine.verify(question, normalized, evidence)
-    manual_fallback = not verified and not (evidence.ocr_texts or evidence.asr_texts or evidence.object_labels)
+    # Gate on verification alone: an unverified answer is a likely
+    # hallucination and must go to manual review whether or not evidence
+    # happens to exist. Evidence presence used to suppress the flag whenever
+    # verified=False but evidence was non-empty — exactly the case where the
+    # answer contradicts real evidence, i.e. the highest-risk case. Evidence
+    # emptiness is informational only now (kept in provenance/logs upstream).
+    manual_fallback = not verified
     return VqaResult(candidate=candidate, evidence=evidence, answer=normalized, verified=verified, manual_fallback=manual_fallback)
 
 

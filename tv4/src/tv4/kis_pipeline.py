@@ -57,7 +57,7 @@ def _refine_top(ranked: list[SearchCandidate], query_text: str, services: KisSer
             {
                 "candidate": {"video_id": c.video_id, "frame_id": c.frame_id, "timestamp_ms": c.timestamp_ms,
                               "upstream_score": c.score, "confidence": c.confidence},
-                "video_path": f"data/raw/{c.video_id}.mp4",
+                "video_path": _video_path_for(c.video_id, services.tv1),
                 "task": "KIS",
                 "refinement_text": query_text,
                 "policy": "representative",
@@ -77,3 +77,17 @@ def _refine_top(ranked: list[SearchCandidate], query_text: str, services: KisSer
         best = result["hypotheses"][0]
         out[i] = replace(c, frame_id=best.get("frame_id", c.frame_id), timestamp_ms=best.get("timestamp_ms", c.timestamp_ms))
     return out
+
+
+def _video_path_for(video_id: str, tv1: TV1Client) -> str:
+    """Resolve the real media path (and real extension) for a video.
+
+    `run_parallel.py` (TV1_TV3_WP04) accepts .mp4/.mkv/.avi/.mov/.webm, so
+    hard-coding `.mp4` here silently breaks refine for any other format.
+    Falls back to the old `.mp4` guess only if TV1's media record is
+    unavailable, so refine degrades instead of hard-failing on lookup issues.
+    """
+    media = tv1.media_record(video_id)
+    if media and media.get("original_video_path"):
+        return media["original_video_path"]
+    return f"data/raw/{video_id}.mp4"

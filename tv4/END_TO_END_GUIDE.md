@@ -110,15 +110,54 @@ python -m venv .venvs\beit3
 .\.venvs\beit3\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
-
-git clone https://github.com/microsoft/unilm.git third_party\unilm
-git -C third_party\unilm checkout 833df7e7832e5064a281131ee64a481afa8e5b95
-
-# Bỏ qua deepspeed (chỉ dùng cho training, không nằm trên đường dẫn inference).
-python -m pip install torchmetrics==0.7.3 tensorboardX
-
 python -m pip install -e .
 python -m pip install -r envs\beit3.txt
+
+   ```powershell
+   if (-not (Test-Path .\third_party\unilm\.git)) {
+     git clone --depth 1 https://github.com/microsoft/unilm.git third_party\unilm
+   }
+   git -C third_party\unilm status --short
+   # Continue only when the command above prints nothing.
+   git -C third_party\unilm fetch --depth 1 origin 833df7e7832e5064a281131ee64a481afa8e5b95
+   git -C third_party\unilm checkout --detach 833df7e7832e5064a281131ee64a481afa8e5b95
+   git -C third_party\unilm rev-parse HEAD
+   ```
+
+
+
+       ```powershell
+   python -c "import torch, timm, torchscale, sentencepiece, transformers; assert torch.cuda.is_available(); print('torch=', torch.__version__, 'cuda=', torch.version.cuda, 'gpu=', torch.cuda.get_device_name(0))"
+
+
+
+
+   $path = ".\third_party\unilm\beit3\utils.py"
+   (beit3) PS D:\aic226\tv2_1\WP03> (Get-Content -Raw $path).Replace("from torch._six import inf", "from math import inf") | Set-Content -NoNewline $path
+   (beit3) PS D:\aic226\tv2_1\WP03> Select-String -Path .\third_party\unilm\beit3\utils.py -Pattern "import inf"
+   
+
+    python -m pip install torchmetrics
+    # Bỏ qua deepspeed (chỉ dùng cho training, không nằm trên đường dẫn inference).
+    python -m pip install torchmetrics==0.7.3 tensorboardX
+
+
+   $env:PYTHONPATH = "$(Resolve-Path .\third_party\unilm\beit3)"
+   python -c "import modeling_finetune; from timm.models import is_model; assert is_model('beit3_base_patch16_384_retrieval'); print('BEiT-3 retrieval import OK')"
+   Remove-Item Env:PYTHONPATH
+   ```
+
+
+
+  ```powershell
+   New-Item -ItemType Directory -Force .\model-cache\beit3, .\model-locks | Out-Null
+   Invoke-WebRequest -Uri https://github.com/addf400/files/releases/download/beit3/beit3_base_patch16_384_coco_retrieval.pth -OutFile .\model-cache\beit3\beit3_base_patch16_384_coco_retrieval.pth
+   Invoke-WebRequest -Uri https://github.com/addf400/files/releases/download/beit3/beit3.spm -OutFile .\model-cache\beit3\beit3.spm
+   if ((Get-Item .\model-cache\beit3\beit3_base_patch16_384_coco_retrieval.pth).Length -ne 445025515) { throw 'BEiT-3 checkpoint size is incorrect; delete it and download again.' }
+   python -m wp03 lock-model --model beit3 --checkpoint .\model-cache\beit3\beit3_base_patch16_384_coco_retrieval.pth --lock-path .\model-locks\beit3.json
+   ```
+
+
 
 # utils.py dùng `from torch._six import inf` — API đã bị xoá khỏi torch hiện đại. Vá:
 (Get-Content third_party\unilm\beit3\utils.py) -replace `
@@ -256,19 +295,19 @@ tv3:
 
 tv2_visual:
   enabled: true
-  python_executable: "../../tv2/WP03/.venvs/coordinator/Scripts/python.exe"
-  wp03_cwd: "../../tv2/WP03"
-  artifact_root: "../../tv2/WP03/artifacts/smoke-run-1"
-  runtime_root: "../../tv2/WP03"
-  runtime_profile: "../../tv2/WP03/configs/runtime.windows.yaml"
+  python_executable: "../../tv2_1/WP03/.venvs/coordinator/Scripts/python.exe"
+  wp03_cwd: "../../tv2_1/WP03"
+  artifact_root: "../../tv2_1/WP03/artifacts/smoke-run-1"
+  runtime_root: "../../tv2_1/WP03"
+  runtime_profile: "../../tv2_1/WP03/configs/runtime.windows.yaml"
   top_k: 100
   candidate_k_per_model: 200
 
 tv2_refine:
   enabled: false
-  python_executable: "../../tv2/WP09/.venv/Scripts/python.exe"
-  wp09_cwd: "../../tv2/WP09"
-  config_path: "../../tv2/WP09/configs/default.yaml"
+  python_executable: "../../tv2_1/WP09/.venv/Scripts/python.exe"
+  wp09_cwd: "../../tv2_1/WP09"
+  config_path: "../../tv2_1/WP09/configs/default.yaml"
 
 fusion:
   rrf_k: 60

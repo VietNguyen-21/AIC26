@@ -16,8 +16,13 @@ DEFAULT_RRF_K = 60
 DEFAULT_DEDUP_WINDOW_MS = 1_000
 
 # Branches TV4 treats as soft/boost-only signals rather than hard filters —
-# a candidate is never *dropped* purely for missing an object hint.
+# a candidate is never *dropped* purely for missing an object hint. They
+# still contribute to RRF like every other branch, but at a reduced weight
+# (see DEFAULT_SOFT_BRANCH_WEIGHT below) so an object/metadata match alone
+# can't out-rank a genuine visual/OCR/ASR hit; it can only nudge candidates
+# that other branches already found.
 SOFT_BRANCHES = {"object", "metadata"}
+DEFAULT_SOFT_BRANCH_WEIGHT = 0.5
 
 
 def reciprocal_rank_fusion(
@@ -26,24 +31,33 @@ def reciprocal_rank_fusion(
     rrf_k: int = DEFAULT_RRF_K,
     dedup_window_ms: int = DEFAULT_DEDUP_WINDOW_MS,
     top_k: int = 100,
+    soft_branch_weight: float = DEFAULT_SOFT_BRANCH_WEIGHT,
 ) -> list[SearchCandidate]:
-    """Standard RRF: score(c) = sum_over_branches 1 / (rrf_k + rank).
+    """Standard RRF: score(c) = sum_over_branches weight(branch) / (rrf_k + rank).
 
     Candidates are keyed by (video_id, frame bucket) where the bucket rounds
     timestamp_ms to `dedup_window_ms` so near-duplicate keyframes from
     different branches merge into one submission-ready row instead of
     crowding the top-100 with near-identical frames of the same event.
+
+    `soft_branch_weight` scales the RRF contribution of SOFT_BRANCHES
+    (object/metadata) relative to hard branches (visual/ocr/asr), so those
+    signals boost/break ties among otherwise-found candidates without being
+    able to rank a candidate that *only* an object/metadata hit ever saw.
     """
     if rrf_k <= 0:
         raise ValueError("rrf_k must be positive")
     if dedup_window_ms <= 0:
         raise ValueError("dedup_window_ms must be positive")
+    if soft_branch_weight < 0:
+        raise ValueError("soft_branch_weight must be non-negative")
 
     buckets: dict[tuple[str, int], dict] = {}
     for branch, candidates in branch_results.items():
+        weight = soft_branch_weight if branch in SOFT_BRANCHES else 1.0
         for c in candidates:
             bucket_key = (c.video_id, c.timestamp_ms // dedup_window_ms)
-            contribution = 1.0 / (rrf_k + c.rank)
+            contribution = weight / (rrf_k + c.rank)
             entry = buckets.get(bucket_key)
             if entry is None:
                 entry = {"candidate": c, "score": 0.0, "sources": [], "model_scores": {}}
@@ -99,8 +113,11 @@ def fuse_kis(
     rrf_k: int = DEFAULT_RRF_K,
     dedup_window_ms: int = DEFAULT_DEDUP_WINDOW_MS,
     top_k: int = 100,
+    soft_branch_weight: float = DEFAULT_SOFT_BRANCH_WEIGHT,
 ) -> list[SearchCandidate]:
-    """KIS/WP10 entry point. Object/metadata contribute score only, never a hard gate."""
+    """KIS/WP10 entry point. Object/metadata contribute score only, at reduced
+    weight, never a hard gate."""
     return reciprocal_rank_fusion(
-        branch_results, rrf_k=rrf_k, dedup_window_ms=dedup_window_ms, top_k=top_k
+        branch_results, rrf_k=rrf_k, dedup_window_ms=dedup_window_ms, top_k=top_k,
+        soft_branch_weight=soft_branch_weight,
     )
