@@ -95,6 +95,57 @@ def test_siglip2_converts_runtime_oom_to_scorer_oom() -> None:
     assert error.value.reason == "scorer_oom"
 
 
+def _siglip2_fakes(*, oom_above: int | None = None):
+    class Tensor:
+        def __init__(self, values): self._values = values
+        def reshape(self, *args): return self
+        def detach(self): return self
+        def cpu(self): return self
+        def tolist(self): return self._values
+    class Processor:
+        def __call__(self, *, images, **kwargs): return {"images": images}
+    class Model:
+        def __init__(self) -> None: self.batch_lengths: list[int] = []
+        def __call__(self, *, images):
+            self.batch_lengths.append(len(images))
+            if oom_above is not None and len(images) > oom_above:
+                raise RuntimeError("CUDA out of memory")
+            return type("Output", (), {"logits_per_image": Tensor(images)})()
+    class NoGrad:
+        def __enter__(self): return self
+        def __exit__(self, *args): return False
+    class Cuda:
+        def __init__(self) -> None: self.empty_cache_calls = 0
+        def empty_cache(self) -> None: self.empty_cache_calls += 1
+    class Torch:
+        def __init__(self) -> None: self.cuda = Cuda()
+        def no_grad(self): return NoGrad()
+    return Model(), Processor(), Torch()
+
+
+def test_siglip2_retries_oom_batch_at_half_size_and_preserves_score_order() -> None:
+    """Catches an OOM discarding a window instead of retrying the same frames smaller."""
+    model, processor, torch = _siglip2_fakes(oom_above=2)
+    scorer = Siglip2Scorer(batch_size=4)
+    scorer._load = lambda: (model, processor, torch)  # type: ignore[method-assign]
+    frames = tuple(DecodedFrame(index, index, "1/1000", index, image_rgb=index) for index in range(5))
+
+    assert scorer.score("door", frames) == (0.0, 1.0, 2.0, 3.0, 4.0)
+    assert model.batch_lengths == [4, 2, 2, 1]
+    assert torch.cuda.empty_cache_calls == 1
+
+
+def test_siglip2_default_uses_eight_frame_batches() -> None:
+    """Catches the configured throughput profile silently regressing to per-frame forwards."""
+    model, processor, torch = _siglip2_fakes()
+    scorer = Siglip2Scorer()
+    scorer._load = lambda: (model, processor, torch)  # type: ignore[method-assign]
+    frames = tuple(DecodedFrame(index, index, "1/1000", index, image_rgb=index) for index in range(9))
+
+    assert scorer.score("door", frames) == tuple(float(index) for index in range(9))
+    assert model.batch_lengths == [8, 1]
+
+
 def test_vqa_evidence_is_counted_once_in_policy_score() -> None:
     """Catches evidence contribution being included in both composite and VQA boost."""
     from wp09.contracts import EvidenceContribution

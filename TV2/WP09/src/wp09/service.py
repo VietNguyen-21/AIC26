@@ -26,7 +26,7 @@ class ExactFrameRefiner:
         self._decoder = decoder
         self._scorer = scorer
         self._config = config
-        self._cache = cache or DecodedWindowCache()
+        self._cache = cache or DecodedWindowCache(config.cache_max_entries, config.cache_ttl_seconds)
 
     def radius_for(self, request: RefineRequest) -> int:
         return self._config.radius_for_confidence(request.candidate.confidence, request.decode_budget)

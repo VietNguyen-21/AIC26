@@ -27,6 +27,8 @@ class RefinementConfig:
     stable_variance_penalty: float = 0.25
     decoder_config: str = "pyav-original-pts-v1"
     config_version: str = "wp09-v1"
+    cache_max_entries: int = 32
+    cache_ttl_seconds: float = 300.0
 
     def radius_for_confidence(self, confidence: float | None, budget: "DecodeBudget") -> int:
         """Lower upstream confidence broadens search, never beyond the request budget."""
@@ -63,6 +65,8 @@ class RefinementConfig:
             stable_variance_penalty=_optional_non_negative_float(values, "stable_variance_penalty", 0.25),
             decoder_config=_optional_string(values, "decoder_config", "pyav-original-pts-v1"),
             config_version=_optional_string(values, "config_version", "wp09-v1"),
+            cache_max_entries=_optional_positive_int(values, "cache_max_entries") or 32,
+            cache_ttl_seconds=_optional_positive_float(values, "cache_ttl_seconds", 300.0),
         )
 
 
@@ -107,6 +111,10 @@ def _optional_non_negative_float(values: Mapping[str, Any], field: str, default:
     if isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0:
         raise ContractError(f"{field} must be a non-negative number")
     return float(value)
+
+
+def _optional_positive_float(values: Mapping[str, Any], field: str, default: float) -> float:
+    return default if field not in values else _positive_float(values, field)
 
 
 def _optional_string(values: Mapping[str, Any], field: str, default: str) -> str:

@@ -35,6 +35,17 @@ The optional GPU dependency is installed with `pip install -e ".[gpu]"`.
 SigLIP2 is lazily loaded only when a real scorer is invoked; CPU tests neither
 download models nor claim GPU compatibility. GPU smoke remains a later handoff.
 
+## Runtime bounds
+
+The in-process decoded-frame cache is LRU-bounded to 32 canonical windows and
+32 request aliases by default. Idle entries expire after 300 seconds; eviction
+also removes request aliases, so they cannot retain decoded RGB pixel data.
+Deployments can set `cache_max_entries` and `cache_ttl_seconds` under `wp09`.
+
+SigLIP2 starts with batches of eight frames. A CUDA OOM clears available CUDA
+cache and retries the same unscored frames with progressively smaller batches;
+an OOM at one frame preserves the existing `manual_only` fallback.
+
 ## Benchmark
 
 `wp09.benchmark.compare_refinement_runs` reports Interval Hit@K and p50/p95
