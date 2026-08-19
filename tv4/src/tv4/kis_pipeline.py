@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from pathlib import Path
+from typing import Any, Mapping
 
 from .clients.tv1_client import TV1Client
 from .clients.tv2_refine_client import TV2RefineClient
@@ -20,7 +22,13 @@ class KisServices:
     tv3: TV3Client
     visual: TV2VisualClient
     refine: TV2RefineClient | None = None
+    feedback: Any | None = None
     preprocess_run_id: str = "unknown"
+    original_media_root: Path | None = None
+    media_registry: Mapping[str, object] | None = None
+    allowed_media_extensions: frozenset[str] = frozenset()
+    derivative_asset_root: Path | None = None
+    allowed_image_extensions: frozenset[str] = frozenset()
 
 
 def run_kis_query(query_text: str, services: KisServices, *, query_id: str | None = None, top_k: int = 100) -> list[SearchCandidate]:
@@ -52,19 +60,26 @@ def _refine_top(ranked: list[SearchCandidate], query_text: str, services: KisSer
     improves the real frame for KIS/VQA/TRAKE" description.
     """
     out = list(ranked)
+    if services.original_media_root is None:
+        return out
+    from .media_identity import resolve_original_media_path
     for i, c in enumerate(out[:refine_top_n]):
+        try:
+            media_path = resolve_original_media_path(services.original_media_root, c.video_id, services.media_registry, services.preprocess_run_id, services.allowed_media_extensions)
+        except ValueError:
+            continue
         result = services.refine.refine(
             {
                 "candidate": {"video_id": c.video_id, "frame_id": c.frame_id, "timestamp_ms": c.timestamp_ms,
                               "upstream_score": c.score, "confidence": c.confidence},
-                "video_path": f"data/raw/{c.video_id}.mp4",
+                "video_path": str(media_path),
                 "task": "KIS",
                 "refinement_text": query_text,
                 "policy": "representative",
                 "context": {
                     "preprocess_run_id": services.preprocess_run_id,
                     "media_record_ref": c.video_id,
-                    "mapping_ref": c.video_id,
+                    "mapping_ref": f"tv1-frames/{c.video_id}",
                     "decoder_version": "pyav-tv4-adapter-1",
                     "model_version": "n/a",
                     "config_version": "default",
@@ -74,6 +89,27 @@ def _refine_top(ranked: list[SearchCandidate], query_text: str, services: KisSer
         )
         if not result or not result.get("hypotheses"):
             continue
-        best = result["hypotheses"][0]
-        out[i] = replace(c, frame_id=best.get("frame_id", c.frame_id), timestamp_ms=best.get("timestamp_ms", c.timestamp_ms))
+        best = canonical_refined_candidate(result["hypotheses"][0])
+        if best is not None:
+            out[i] = replace(c, frame_id=best[0], timestamp_ms=best[1])
     return out
+
+
+def canonical_refined_candidate(payload: object) -> tuple[int, int] | None:
+    """Allow a replacement only when WP09 explicitly proved original identity."""
+    if not isinstance(payload, dict):
+        return None
+    if payload.get("mapping_guaranteed") is not True or payload.get("submission_selectable") is not True:
+        return None
+    if payload.get("provenance_mode") != "live" or payload.get("identity_source") != "certified_run_consecutive_original_decode":
+        return None
+    if payload.get("media_identity_verified") is not True or payload.get("producer_compatibility_verified") is not True:
+        return None
+    if not isinstance(payload.get("certification_id"), str) or not isinstance(payload.get("certification_report_sha256"), str):
+        return None
+    frame_id, timestamp_ms = payload.get("frame_id"), payload.get("timestamp_ms")
+    if isinstance(frame_id, bool) or not isinstance(frame_id, int) or frame_id < 0:
+        return None
+    if isinstance(timestamp_ms, bool) or not isinstance(timestamp_ms, int) or timestamp_ms < 0:
+        return None
+    return frame_id, timestamp_ms

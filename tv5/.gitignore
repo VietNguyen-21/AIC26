@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Production build output
+dist/
+build/
+
+# Testing & Coverage
+coverage/
+.vitest/
+
+# Caches
+.vite/
+.turbo/
+.eslintcache
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local & OS
+.DS_Store
+Thumbs.db
+.env.local
+.env.*.local
+*.local

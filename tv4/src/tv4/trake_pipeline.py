@@ -33,19 +33,45 @@ def run_trake_query(
     decision = route_trake(query_text, events=events, query_id=query_id)
     request = decision.request
 
-    # Stage 1 (Retrieval): fuse on the whole query text to find the video.
-    whole_query_ranked = _fuse_for_request(replace(request, events=()), services, query_text)
+    # Build requests for whole query (idx 0) and all ordered events (idx 1..N)
+    batch_specs: list[tuple[str, str, int | None, SearchRequest]] = []
+    whole_req = replace(request, events=())
+    batch_specs.append((request.query_id, query_text, None, whole_req))
+
+    for idx, event_text in enumerate(request.events):
+        event_req = replace(request, query_id=f"{request.query_id}-ev{idx}", event_index=idx, events=())
+        batch_specs.append((event_req.query_id, event_text, idx, event_req))
+
+    # Single batched visual search across whole sequence and all events
+    visual_queries = [(qid, qtxt, ev_idx) for qid, qtxt, ev_idx, _ in batch_specs]
+    if hasattr(services.visual, "search_batch"):
+        visual_results = services.visual.search_batch(visual_queries)
+    else:
+        visual_results = [
+            services.visual.search(qid, qtxt, event_index=ev_idx)
+            for qid, qtxt, ev_idx in visual_queries
+        ]
+
+    # Perform TV3 search and fusion per branch
+    ranked_results: list[list[SearchCandidate]] = []
+    for (_, _, _, req), visual_candidates in zip(batch_specs, visual_results):
+        branch_results: dict[str, list[SearchCandidate]] = {
+            "visual": visual_candidates,
+        }
+        tv3_results = services.tv3.search_all(req, ["ocr", "asr", "object"])
+        branch_results.update(tv3_results)
+        ranked = fuse_kis(branch_results, top_k=req.limit)
+        ranked_results.append(ranked)
+
+    whole_query_ranked = ranked_results[0]
+    per_event_candidates = ranked_results[1:]
+
+    # Stage 1 (Retrieval): Pick video from whole query ranked fusion
     video_id = pick_video(whole_query_ranked)
     if video_id is None:
         return None
 
-    # Stage 2 (Alignment): fuse per event, restricted (post-hoc) to that video.
-    per_event_candidates = []
-    for idx, event_text in enumerate(request.events):
-        event_request = replace(request, query_id=f"{request.query_id}-ev{idx}", event_index=idx, events=())
-        ranked = _fuse_for_request(event_request, services, event_text)
-        per_event_candidates.append(ranked)
-
+    # Stage 2 (Alignment): Build event pools and align with dynamic programming
     pools = build_event_pools(video_id, per_event_candidates)
     aligned = align_trake(pools, strategy=strategy)
     if aligned is None:

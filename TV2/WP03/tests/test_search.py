@@ -9,7 +9,7 @@ import pytest
 from wp03.corpus import load_corpus
 from wp03.contracts import ContractError, SearchRequest
 from wp03.orchestrator import BuildRequest, build_model_artifacts
-from wp03.search import search_image, search_visual
+from wp03.search import search_image, search_visual, search_visual_batch
 from tests.conftest import write_jsonl
 from tests.test_corpus import record
 
@@ -154,3 +154,45 @@ def test_search_uses_configured_rrf_constant(data_root: Path) -> None:
     )
 
     assert response.candidates[0].score == pytest.approx(1 / 11)
+
+
+def test_search_visual_batch_matches_single_search(data_root: Path) -> None:
+    write_jsonl(data_root / "frames.jsonl", [record(3, "keyframes/L21_V001/000003.jpg"), record(42, "keyframes/L21_V001/000042.jpg")])
+    corpus = load_corpus(data_root, PurePosixPath("frames.jsonl"), None)
+    artifact_root = data_root / "artifacts"
+    encoder = FakeEncoder()
+    build_model_artifacts(BuildRequest("run", "fake", "rev", data_root, artifact_root, corpus, 2), encoder)
+
+    req1 = SearchRequest(
+        query_id="q-whole", task="TRAKE", query_text="whole action sequence", question=None,
+        events=(), filters={}, limit=2, language="vi", session_id=None,
+    )
+    req2 = SearchRequest(
+        query_id="q-ev0", task="TRAKE", query_text="event one jump", question=None,
+        events=(), filters={}, limit=2, language="vi", session_id=None, event_index=0,
+    )
+    req3 = SearchRequest(
+        query_id="q-ev1", task="TRAKE", query_text="event two land", question=None,
+        events=(), filters={}, limit=2, language="vi", session_id=None, event_index=1,
+    )
+
+    batch_responses = search_visual_batch(
+        [req1, req2, req3],
+        artifact_root=artifact_root,
+        encoders={"fake": encoder},
+        candidate_k_per_model=2,
+        hard_candidate_cap=None,
+        rrf_k=60,
+    )
+
+    assert len(batch_responses) == 3
+    single_resp1 = search_visual(
+        request=req1, artifact_root=artifact_root, encoders={"fake": encoder},
+        candidate_k_per_model=2, hard_candidate_cap=None, rrf_k=60,
+    )
+    assert batch_responses[0].candidates[0].frame_id == single_resp1.candidates[0].frame_id
+    assert batch_responses[0].candidates[0].score == single_resp1.candidates[0].score
+    assert batch_responses[1].query_id == "q-ev0"
+    assert batch_responses[1].candidates[0].event_index == 0
+    assert batch_responses[2].query_id == "q-ev1"
+    assert batch_responses[2].candidates[0].event_index == 1

@@ -1,0 +1,2027 @@
+{
+  "schema_version": "1.0",
+  "sources": {
+    "spec": "spec.md",
+    "tasks": "tasks.md"
+  },
+  "expected_fr_ids": [
+    "FR-001",
+    "FR-002",
+    "FR-003",
+    "FR-004",
+    "FR-005",
+    "FR-006",
+    "FR-007",
+    "FR-008",
+    "FR-009",
+    "FR-010",
+    "FR-011",
+    "FR-012",
+    "FR-013",
+    "FR-014",
+    "FR-015",
+    "FR-016",
+    "FR-017",
+    "FR-018",
+    "FR-019",
+    "FR-020",
+    "FR-021",
+    "FR-022",
+    "FR-023",
+    "FR-024",
+    "FR-025",
+    "FR-026",
+    "FR-027",
+    "FR-028",
+    "FR-029",
+    "FR-030",
+    "FR-031",
+    "FR-032",
+    "FR-033",
+    "FR-034",
+    "FR-035",
+    "FR-036",
+    "FR-037",
+    "FR-038",
+    "FR-039",
+    "FR-040",
+    "FR-041",
+    "FR-042",
+    "FR-043",
+    "FR-044",
+    "FR-045",
+    "FR-046",
+    "FR-047",
+    "FR-048",
+    "FR-049",
+    "FR-050",
+    "FR-051",
+    "FR-052",
+    "FR-053",
+    "FR-054",
+    "FR-055",
+    "FR-056",
+    "FR-057",
+    "FR-058",
+    "FR-059",
+    "FR-060",
+    "FR-061",
+    "FR-062",
+    "FR-063",
+    "FR-064",
+    "FR-065",
+    "FR-066",
+    "FR-067",
+    "FR-068",
+    "FR-069",
+    "FR-070",
+    "FR-071",
+    "FR-072",
+    "FR-073",
+    "FR-074",
+    "FR-075",
+    "FR-076",
+    "FR-077",
+    "FR-078",
+    "FR-079",
+    "FR-080"
+  ],
+  "expected_task_ids": [
+    "T001",
+    "T002",
+    "T003",
+    "T004",
+    "T005",
+    "T006",
+    "T007",
+    "T008",
+    "T009",
+    "T010",
+    "T011",
+    "T012",
+    "T013",
+    "T014",
+    "T015",
+    "T016",
+    "T017",
+    "T018",
+    "T019",
+    "T020",
+    "T021",
+    "T022",
+    "T023",
+    "T024",
+    "T025",
+    "T026",
+    "T027",
+    "T028",
+    "T029",
+    "T030",
+    "T031",
+    "T032",
+    "T033",
+    "T034",
+    "T035",
+    "T036",
+    "T037",
+    "T038",
+    "T039",
+    "T040",
+    "T041",
+    "T042",
+    "T043",
+    "T044",
+    "T045",
+    "T046",
+    "T047",
+    "T048",
+    "T049",
+    "T050",
+    "T051",
+    "T052",
+    "T053",
+    "T054",
+    "T055",
+    "T056",
+    "T057",
+    "T058",
+    "T059",
+    "T060",
+    "T061"
+  ],
+  "requirements": [
+    {
+      "id": "FR-001",
+      "tasks": [
+        "T001"
+      ],
+      "tests": [
+        "tv5/tests/test_t001_t004_red.py"
+      ]
+    },
+    {
+      "id": "FR-002",
+      "tasks": [
+        "T001"
+      ],
+      "tests": [
+        "tv5/tests/test_t001_t004_red.py"
+      ]
+    },
+    {
+      "id": "FR-003",
+      "tasks": [
+        "T001"
+      ],
+      "tests": [
+        "tv5/tests/test_t001_t004_red.py"
+      ]
+    },
+    {
+      "id": "FR-004",
+      "tasks": [
+        "T001"
+      ],
+      "tests": [
+        "tv5/tests/test_t001_t004_red.py"
+      ]
+    },
+    {
+      "id": "FR-005",
+      "tasks": [
+        "T001"
+      ],
+      "tests": [
+        "tv5/tests/test_t001_t004_red.py"
+      ]
+    },
+    {
+      "id": "FR-006",
+      "tasks": [
+        "T026",
+        "T027"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-007",
+      "tasks": [
+        "T026",
+        "T027"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-008",
+      "tasks": [
+        "T026",
+        "T027"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-009",
+      "tasks": [
+        "T015",
+        "T016",
+        "T030",
+        "T031"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-010",
+      "tasks": [
+        "T015",
+        "T016",
+        "T030",
+        "T031"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-011",
+      "tasks": [
+        "T015",
+        "T016",
+        "T030",
+        "T031"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-012",
+      "tasks": [
+        "T015",
+        "T016",
+        "T030",
+        "T031"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-013",
+      "tasks": [
+        "T015",
+        "T016",
+        "T030",
+        "T031"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-014",
+      "tasks": [
+        "T015",
+        "T016",
+        "T030",
+        "T031"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-015",
+      "tasks": [
+        "T015",
+        "T016",
+        "T030",
+        "T031"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-016",
+      "tasks": [
+        "T015",
+        "T016",
+        "T030",
+        "T031"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-017",
+      "tasks": [
+        "T032",
+        "T033"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-018",
+      "tasks": [
+        "T032",
+        "T033"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-019",
+      "tasks": [
+        "T032",
+        "T033"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-020",
+      "tasks": [
+        "T032",
+        "T033"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-021",
+      "tasks": [
+        "T032",
+        "T033"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-022",
+      "tasks": [
+        "T013",
+        "T014"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-023",
+      "tasks": [
+        "T013",
+        "T014"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-024",
+      "tasks": [
+        "T013",
+        "T014"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-025",
+      "tasks": [
+        "T013",
+        "T014"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-026",
+      "tasks": [
+        "T013",
+        "T014"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-027",
+      "tasks": [
+        "T038",
+        "T039"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-028",
+      "tasks": [
+        "T038",
+        "T039"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-029",
+      "tasks": [
+        "T038",
+        "T039"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-030",
+      "tasks": [
+        "T040",
+        "T041"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-031",
+      "tasks": [
+        "T040",
+        "T041"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-032",
+      "tasks": [
+        "T040",
+        "T041"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-033",
+      "tasks": [
+        "T040",
+        "T041"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-034",
+      "tasks": [
+        "T040",
+        "T041"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-035",
+      "tasks": [
+        "T040",
+        "T041"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-036",
+      "tasks": [
+        "T038",
+        "T039",
+        "T040",
+        "T041"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-037",
+      "tasks": [
+        "T038",
+        "T039",
+        "T040",
+        "T041"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-038",
+      "tasks": [
+        "T038",
+        "T039",
+        "T040",
+        "T041"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-039",
+      "tasks": [
+        "T038",
+        "T039",
+        "T040",
+        "T041"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-040",
+      "tasks": [
+        "T042"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-041",
+      "tasks": [
+        "T042"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-042",
+      "tasks": [
+        "T042"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-043",
+      "tasks": [
+        "T045",
+        "T046"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-044",
+      "tasks": [
+        "T045",
+        "T046"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-045",
+      "tasks": [
+        "T045",
+        "T046"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-046",
+      "tasks": [
+        "T045",
+        "T046"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-047",
+      "tasks": [
+        "T017",
+        "T018",
+        "T022",
+        "T023",
+        "T049"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-048",
+      "tasks": [
+        "T017",
+        "T018",
+        "T022",
+        "T023",
+        "T049"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-049",
+      "tasks": [
+        "T017",
+        "T018",
+        "T022",
+        "T023",
+        "T049"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-050",
+      "tasks": [
+        "T022",
+        "T023",
+        "T049",
+        "T053",
+        "T054"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-051",
+      "tasks": [
+        "T043",
+        "T044",
+        "T055"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-052",
+      "tasks": [
+        "T051",
+        "T052",
+        "T055",
+        "T061"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-053",
+      "tasks": [
+        "T051",
+        "T052",
+        "T055",
+        "T061"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-054",
+      "tasks": [
+        "T051",
+        "T052",
+        "T053",
+        "T054",
+        "T055",
+        "T061"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-055",
+      "tasks": [
+        "T051",
+        "T052",
+        "T053",
+        "T054",
+        "T055",
+        "T061"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-056",
+      "tasks": [
+        "T060"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-057",
+      "tasks": [
+        "T040",
+        "T041"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-058",
+      "tasks": [
+        "T002",
+        "T024",
+        "T025",
+        "T026",
+        "T027",
+        "T049",
+        "T058"
+      ],
+      "tests": [
+        "tv5/tests/contract/test_current_boundary_goldens.py"
+      ]
+    },
+    {
+      "id": "FR-059",
+      "tasks": [
+        "T002",
+        "T019",
+        "T020",
+        "T028",
+        "T029",
+        "T049",
+        "T058"
+      ],
+      "tests": [
+        "tv5/tests/contract/test_current_boundary_goldens.py"
+      ]
+    },
+    {
+      "id": "FR-060",
+      "tasks": [
+        "T002",
+        "T019",
+        "T020",
+        "T028",
+        "T029",
+        "T049",
+        "T058"
+      ],
+      "tests": [
+        "tv5/tests/contract/test_current_boundary_goldens.py"
+      ]
+    },
+    {
+      "id": "FR-061",
+      "tasks": [
+        "T002",
+        "T015",
+        "T016",
+        "T030",
+        "T031",
+        "T049",
+        "T058"
+      ],
+      "tests": [
+        "tv5/tests/contract/test_current_boundary_goldens.py"
+      ]
+    },
+    {
+      "id": "FR-062",
+      "tasks": [
+        "T002",
+        "T032",
+        "T033",
+        "T049",
+        "T058"
+      ],
+      "tests": [
+        "tv5/tests/contract/test_current_boundary_goldens.py"
+      ]
+    },
+    {
+      "id": "FR-063",
+      "tasks": [
+        "T002",
+        "T026",
+        "T027",
+        "T049",
+        "T056",
+        "T058"
+      ],
+      "tests": [
+        "tv5/tests/contract/test_current_boundary_goldens.py"
+      ]
+    },
+    {
+      "id": "FR-064",
+      "tasks": [
+        "T002",
+        "T015",
+        "T016",
+        "T026",
+        "T027",
+        "T034",
+        "T035",
+        "T049",
+        "T057",
+        "T058"
+      ],
+      "tests": [
+        "tv5/tests/contract/test_current_boundary_goldens.py"
+      ]
+    },
+    {
+      "id": "FR-065",
+      "tasks": [
+        "T002",
+        "T015",
+        "T016",
+        "T026",
+        "T027",
+        "T034",
+        "T035",
+        "T049",
+        "T058"
+      ],
+      "tests": [
+        "tv5/tests/contract/test_current_boundary_goldens.py"
+      ]
+    },
+    {
+      "id": "FR-066",
+      "tasks": [
+        "T002",
+        "T015",
+        "T016",
+        "T026",
+        "T027",
+        "T030",
+        "T031",
+        "T034",
+        "T035",
+        "T049",
+        "T058"
+      ],
+      "tests": [
+        "tv5/tests/contract/test_current_boundary_goldens.py"
+      ]
+    },
+    {
+      "id": "FR-067",
+      "tasks": [
+        "T002",
+        "T028",
+        "T029",
+        "T030",
+        "T031",
+        "T032",
+        "T033",
+        "T034",
+        "T035",
+        "T036",
+        "T037",
+        "T049",
+        "T058",
+        "T059"
+      ],
+      "tests": [
+        "tv5/tests/contract/test_current_boundary_goldens.py"
+      ]
+    },
+    {
+      "id": "FR-068",
+      "tasks": [
+        "T005",
+        "T006",
+        "T007",
+        "T008",
+        "T009",
+        "T010",
+        "T011",
+        "T012",
+        "T021",
+        "T058"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-069",
+      "tasks": [
+        "T005",
+        "T006",
+        "T007",
+        "T008",
+        "T009",
+        "T010",
+        "T011",
+        "T012",
+        "T021",
+        "T058"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-070",
+      "tasks": [
+        "T005",
+        "T006",
+        "T007",
+        "T008",
+        "T009",
+        "T010",
+        "T011",
+        "T012",
+        "T021",
+        "T058"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-071",
+      "tasks": [
+        "T005",
+        "T006",
+        "T007",
+        "T008",
+        "T009",
+        "T010",
+        "T011",
+        "T012",
+        "T021",
+        "T038",
+        "T039",
+        "T058"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-072",
+      "tasks": [
+        "T010",
+        "T013",
+        "T014",
+        "T021",
+        "T058"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-073",
+      "tasks": [
+        "T003",
+        "T004",
+        "T017",
+        "T018",
+        "T050",
+        "T058"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-074",
+      "tasks": [
+        "T003",
+        "T004",
+        "T050",
+        "T056",
+        "T058"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-075",
+      "tasks": [
+        "T003",
+        "T004",
+        "T050",
+        "T057",
+        "T058"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-076",
+      "tasks": [
+        "T024",
+        "T025",
+        "T045",
+        "T046",
+        "T047",
+        "T048",
+        "T058"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-077",
+      "tasks": [
+        "T024",
+        "T025",
+        "T045",
+        "T046",
+        "T047",
+        "T048",
+        "T058",
+        "T060"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-078",
+      "tasks": [
+        "T022",
+        "T023",
+        "T042",
+        "T043",
+        "T044",
+        "T051",
+        "T052",
+        "T053",
+        "T054",
+        "T055",
+        "T058",
+        "T061"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-079",
+      "tasks": [
+        "T051",
+        "T052",
+        "T053",
+        "T054",
+        "T055",
+        "T058",
+        "T059",
+        "T060",
+        "T061"
+      ],
+      "tests": [
+        "planned test evidence in tasks.md"
+      ]
+    },
+    {
+      "id": "FR-080",
+      "tasks": [
+        "T001"
+      ],
+      "tests": [
+        "tv5/tests/test_t001_t004_red.py"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T001",
+      "requirements": [
+        "FR-001",
+        "FR-002",
+        "FR-003",
+        "FR-004",
+        "FR-005",
+        "FR-080"
+      ],
+      "prerequisites": [],
+      "summary": " [P0] Governance** (Owner: TV5; Reqs: FR-001-005, FR-080) Reconcile authority assertions and machine-readable requirement/task/test map in `specs/...` and future `tests/traceability/`. Prereq: none. Test first: checker detects missing/orphan requirement and forbidden preprocessing task. Accept: every FR maps to task/test and no task runs upstream preprocessing. Final-live: none."
+    },
+    {
+      "id": "T002",
+      "requirements": [
+        "FR-058",
+        "FR-059",
+        "FR-060",
+        "FR-061",
+        "FR-062",
+        "FR-063",
+        "FR-064",
+        "FR-065",
+        "FR-066",
+        "FR-067"
+      ],
+      "prerequisites": [
+        "T001"
+      ],
+      "summary": " [P0] Boundary goldens** (Owner: TV5/TV4; Reqs: FR-058-067) Capture actual TV4/WP08/WP09 request/response schemas and malformed/degraded fixtures in `tests/contract/`. Prereq: T001. Test first: schema-version/canonical-field/unknown-field cases fail against current gaps. Accept: KIS, Feedback, VQA, TRAKE, evidence and health seams are explicit. Final-live: none."
+    },
+    {
+      "id": "T003",
+      "requirements": [
+        "FR-073",
+        "FR-074",
+        "FR-075"
+      ],
+      "prerequisites": [
+        "T001"
+      ],
+      "summary": " [P] [P0] Readiness validator tests** (Owner: TV5; Reqs: FR-073-075) Add fixtures/goldens for `READY|PARTIAL|HANDOVER PENDING|CODE GAP|INCOMPATIBLE|ACTUALLY MISSING`, CLI diagnostics and non-mutation in `tests/unit/test_artifact_readiness.py`. Prereq: T001. Accept: current WP03 is `PARTIAL`; corrected WP04 modality delivery is `HANDOVER PENDING`; absent TV4 transport over an existing capability is `CODE GAP`; corrupt schema/digest is `INCOMPATIBLE`. Final-live: none."
+    },
+    {
+      "id": "T004",
+      "requirements": [
+        "FR-073",
+        "FR-074",
+        "FR-075"
+      ],
+      "prerequisites": [
+        "T003"
+      ],
+      "summary": " [P0] Readiness validator** (Owner: TV5; Reqs: FR-073-075) Implement read-only manifest/schema/digest/index-map/count/coverage/linkage/provenance checks in `tv5/readiness/` and CLI/status adapter. Prereq: T003. Accept: derives expected coverage from registries where practical, distinguishes handover/data/source/adapter/UI state, never preprocesses/repairs, emits actionable report. Final-live: corrected Claim 1/2 handovers for `READY` acceptance."
+    },
+    {
+      "id": "T005",
+      "requirements": [
+        "FR-068",
+        "FR-069",
+        "FR-070",
+        "FR-071"
+      ],
+      "prerequisites": [],
+      "summary": " [P0] Resolver proof fixtures** (Owner: WP09 tracked source; Reqs: FR-068-071) Completed in E4-1. Evidence: `TV2/WP09/tests/test_production_resolver.py`, `test_canonical_identity_proof.py` and `test_run_certified_resolution.py`; accepted review includes forged/nonselectable proof rejection and live non-sample video acceptance. The bounded semantic certification sample and `VFR_NOT_LIVE_SAMPLED` are accepted non-blocking residual risks."
+    },
+    {
+      "id": "T006",
+      "requirements": [
+        "FR-068",
+        "FR-069",
+        "FR-070",
+        "FR-071"
+      ],
+      "prerequisites": [],
+      "summary": " [P0] Production resolver** (Owner: WP09 tracked source; Reqs: FR-068-071) Completed in E4-1. Evidence: production `ExactFrameResolver` and certified canonical identity path in `TV2/WP09/src/wp09/mapping.py`; unresolved/conflicting proof fails closed. Do not rebuild."
+    },
+    {
+      "id": "T007",
+      "requirements": [
+        "FR-068",
+        "FR-069",
+        "FR-070",
+        "FR-071"
+      ],
+      "prerequisites": [],
+      "summary": " [P0] Consecutive-neighbor tests** (Owner: WP09; Reqs: FR-068-071) Completed in E4-1. Evidence: `TV2/WP09/tests/test_exact_neighbors.py` covers previous/current/next ORIGINAL frames, repeated stepping and boundaries under the accepted scope."
+    },
+    {
+      "id": "T008",
+      "requirements": [
+        "FR-068",
+        "FR-069",
+        "FR-070",
+        "FR-071"
+      ],
+      "prerequisites": [],
+      "summary": " [P0] Consecutive-neighbor service** (Owner: WP09; Reqs: FR-068-071) Completed in E4-1. Evidence: accepted certified-anchor and signed cumulative-step service/contracts/cache behavior with canonical selectable proof and no persistent corpus replacement index."
+    },
+    {
+      "id": "T009",
+      "requirements": [
+        "FR-068",
+        "FR-069",
+        "FR-070",
+        "FR-071"
+      ],
+      "prerequisites": [],
+      "summary": " [P0] WP09 integration regressions** (Owner: WP09; Reqs: FR-068-071) Completed in E4-1. Evidence: accepted automated WP09 policy/cache/provenance regressions preserve the canonical coarse candidate and reject unproved neighbor selection."
+    },
+    {
+      "id": "T010",
+      "requirements": [
+        "FR-068",
+        "FR-069",
+        "FR-070",
+        "FR-071",
+        "FR-072"
+      ],
+      "prerequisites": [],
+      "summary": " [P] [P0] TV4 exact-frame tests** (Owner: TV4 tracked source; Reqs: FR-068-072) Completed in E4-1. Evidence: `tv4/tests/test_wp09_integration.py`, `test_exact_identity.py` and API regressions cover canonical replacement, stale/forged/nonselectable rejection and accepted media identity behavior."
+    },
+    {
+      "id": "T011",
+      "requirements": [
+        "FR-068",
+        "FR-069",
+        "FR-070",
+        "FR-071"
+      ],
+      "prerequisites": [],
+      "summary": " [P0] TV4 WP09 integration repair** (Owner: TV4 tracked source; Reqs: FR-068-071) Completed in E4-1. Evidence: tracked TV4 adapter/client/API use resolver-proven identities and preserve/degrade the canonical anchor on failure. This task does not include the still-open browser media transport."
+    },
+    {
+      "id": "T012",
+      "requirements": [
+        "FR-068",
+        "FR-069",
+        "FR-070",
+        "FR-071"
+      ],
+      "prerequisites": [],
+      "summary": " [P0] Exact-neighbor API contract** (Owner: TV4; Reqs: FR-068-071) Completed in E4-1. Evidence: `POST /exact-frame/neighbors` exposes certified-anchor signed cumulative stepping, ORIGINAL-frame neighbors/boundaries, selectable proof/provenance and fail-closed invalid-identity handling. WP13 consumption tests remain in downstream UI/basket tasks."
+    },
+    {
+      "id": "T013",
+      "requirements": [
+        "FR-022",
+        "FR-023",
+        "FR-024",
+        "FR-025",
+        "FR-026",
+        "FR-072"
+      ],
+      "prerequisites": [
+        "T002"
+      ],
+      "summary": " [P] [P0] Existing media boundary characterization and security goldens** (Owner: TV4/TV5; Reqs: FR-022-026, FR-072) Characterize WP04's existing Range streaming, original-frame JPEG and timestamp/frame resolution semantics, then add TV4/WP13 goldens for HEAD/GET/206/416, containment, traversal/symlink, unknown video, allowed extension, identity headers, read-only behavior and proxy resolution. Prereq: T002. Accept: tests distinguish the existing upstream capability from the TV4 CODE GAP and never derive identity from playback. Final-live: target media mount."
+    },
+    {
+      "id": "T014",
+      "requirements": [
+        "FR-022",
+        "FR-023",
+        "FR-024",
+        "FR-025",
+        "FR-026",
+        "FR-072"
+      ],
+      "prerequisites": [
+        "T013"
+      ],
+      "summary": " [P0] Minimal safe TV4 media/image adapter** (Owner: TV4/TV5; Reqs: FR-022-026, FR-072) Reuse/wrap the proven WP04 semantics behind TV4 with configured authoritative registry/root resolution, contained byte-range video and original-frame/keyframe/thumbnail browser URLs; UI opens canonical timestamps only. Prereq: T013. Accept: original source remains read-only, contained and seekable; response identity is authoritative; canonical IDs come only from upstream/exact service. Final-live: target mount validation."
+    },
+    {
+      "id": "T015",
+      "requirements": [
+        "FR-009",
+        "FR-010",
+        "FR-011",
+        "FR-012",
+        "FR-013",
+        "FR-014",
+        "FR-015",
+        "FR-016",
+        "FR-061",
+        "FR-064",
+        "FR-065",
+        "FR-066"
+      ],
+      "prerequisites": [
+        "T002"
+      ],
+      "summary": " [P] [P0] Rich evidence/VQA tests** (Owner: TV4; Reqs: FR-009-016, FR-061, FR-064-066) Test original query/question propagation, OCR bbox, ASR timing/context, Object bbox/crop, multi-frame refs, empty evidence, verifier, one controlled retry, abstain/manual predicate. Prereq: T002. Accept: current flattened/unsafe implementation fails. Final-live: WP04/VLM availability only for respective live cases."
+    },
+    {
+      "id": "T016",
+      "requirements": [
+        "FR-009",
+        "FR-010",
+        "FR-011",
+        "FR-012",
+        "FR-013",
+        "FR-014",
+        "FR-015",
+        "FR-016",
+        "FR-061",
+        "FR-064",
+        "FR-065",
+        "FR-066"
+      ],
+      "prerequisites": [
+        "T015"
+      ],
+      "summary": " [P0] TV4 evidence and VQA repair** (Owner: TV4; Reqs: FR-009-016, FR-061, FR-064-066) Extend contracts/client/wiring in `contracts.py`, `wp11_vqa.py`, `api.py`; retain pre-approval normalization but return advisory proposal/status. Prereq: T015. Accept: empty evidence never confident; weak/unavailable VLM manual; evidence retains provenance. Final-live: corrected WP04 and approved VLM/verifier."
+    },
+    {
+      "id": "T017",
+      "requirements": [
+        "FR-047",
+        "FR-048",
+        "FR-049",
+        "FR-073"
+      ],
+      "prerequisites": [
+        "T002"
+      ],
+      "summary": " [P] [P0] Dependency-health tests** (Owner: TV4/TV5; Reqs: FR-047-049, FR-073) Test probes for WP03, each WP04 branch/index, WP08, WP09, VLM/verifier and media. Prereq: T002. Accept: process-up/config-load alone is not `READY`; fixture labeled. Final-live: live services."
+    },
+    {
+      "id": "T018",
+      "requirements": [
+        "FR-047",
+        "FR-048",
+        "FR-049",
+        "FR-073"
+      ],
+      "prerequisites": [
+        "T017"
+      ],
+      "summary": " [P0] Dependency health/degraded API** (Owner: TV4; Reqs: FR-047-049, FR-073) Implement component readiness and capability impact in `api.py`, config/adapters/fixtures. Prereq: T017. Accept: honest scoped status and safe fallbacks. Final-live: all live probes."
+    },
+    {
+      "id": "T019",
+      "requirements": [
+        "FR-059",
+        "FR-060"
+      ],
+      "prerequisites": [
+        "T002"
+      ],
+      "summary": " [P] [P0] Feedback seam tests** (Owner: WP08/TV4; Reqs: FR-059-060) Test original query/reference/text/history/revision/refined state/reset/no basket mutation/unavailable status against actual WP08 contracts. Prereq: T002. Accept: no invented WP08 behavior; advanced model absence is scoped degradation. Final-live: benchmark-approved model only if selected."
+    },
+    {
+      "id": "T020",
+      "requirements": [
+        "FR-059",
+        "FR-060"
+      ],
+      "prerequisites": [
+        "T019"
+      ],
+      "summary": " [P0] TV4 Feedback integration** (Owner: TV4; Reqs: FR-059-060) Add supported WP08 adapter/API/fixtures and canonical validation in tracked TV4. Prereq: T019. Accept: deterministic current seam or explicit unavailable; original results remain retrievable. Final-live: corrected WP03 for corpus-wide live feedback."
+    },
+    {
+      "id": "T021",
+      "requirements": [
+        "FR-068",
+        "FR-069",
+        "FR-070",
+        "FR-071",
+        "FR-072"
+      ],
+      "prerequisites": [],
+      "summary": " [P0] WP09 tracked/runtime synchronization** (Owner: WP09; Reqs: FR-068-072) Completed and accepted. Evidence: `D:\\aic226\\WP09_TRACKED_RUNTIME_SYNC_REPORT.txt` records `tv5/TV2/WP09` -> `tv2_1/WP09`, 34 tracked files verified identical, 0 runtime missing and 0 hash mismatch. Do not repeat this synchronization. Future TV4/WP13 release-file synchronization, if needed after their own open tasks, follows normal tracked-first review and is not a reason to rerun WP09 sync."
+    },
+    {
+      "id": "T022",
+      "requirements": [
+        "FR-047",
+        "FR-048",
+        "FR-049",
+        "FR-050",
+        "FR-078"
+      ],
+      "prerequisites": [
+        "T002"
+      ],
+      "summary": " [P] [P0] Shell/state tests** (Owner: TV5; Reqs: FR-047-050, FR-078) Add fixture/current-partial/final-live config, atomic draft, restore-revalidation and status-view tests in `tests/unit/` and `tests/integration/`. Prereq: T002. Accept: deterministic state and visible modes. Final-live: none."
+    },
+    {
+      "id": "T023",
+      "requirements": [
+        "FR-047",
+        "FR-048",
+        "FR-049",
+        "FR-050",
+        "FR-078"
+      ],
+      "prerequisites": [
+        "T022"
+      ],
+      "summary": " [P0] WP13 shell/state** (Owner: TV5; Reqs: FR-047-050, FR-078) Implement app/config/typed clients/domain persistence/status shell in `tv5/`. Prereq: T022. Accept: only WP13 mutable state is writable; health visible; restore invalidates readiness. Final-live: none."
+    },
+    {
+      "id": "T024",
+      "requirements": [
+        "FR-058",
+        "FR-076",
+        "FR-077"
+      ],
+      "prerequisites": [
+        "T022"
+      ],
+      "summary": " [P] [P0] Telemetry tests** (Owner: TV5; Reqs: FR-058, FR-076-077) Test query/run/model/config/branch/latency/correction/time-first-correct/validation-error events and secret redaction. Prereq: T022. Accept: deterministic schema/provenance. Final-live: none."
+    },
+    {
+      "id": "T025",
+      "requirements": [
+        "FR-058",
+        "FR-076",
+        "FR-077"
+      ],
+      "prerequisites": [
+        "T024"
+      ],
+      "summary": " [P0] Operational telemetry** (Owner: TV5; Reqs: FR-058, FR-076-077) Implement bounded structured telemetry/report adapters in `tv5/telemetry/`. Prereq: T024. Accept: reports support benchmark/error/mock workflow without upstream job ownership. Final-live: none."
+    },
+    {
+      "id": "T026",
+      "requirements": [
+        "FR-006",
+        "FR-007",
+        "FR-008",
+        "FR-058",
+        "FR-063",
+        "FR-064",
+        "FR-065",
+        "FR-066"
+      ],
+      "prerequisites": [
+        "T023"
+      ],
+      "summary": " [P] [P0] KIS/Visual tests** (Owner: TV5; Reqs: FR-006-008, FR-058, FR-063-066) Test text query, <=100 continuous rank, Visual/FAISS provenance, diversity, empty/degraded/dense fallback, exact correction and selection. Prereq: T023. Accept: deterministic fixture and current WP03 cases. Final-live: corrected WP03 for corpus coverage."
+    },
+    {
+      "id": "T027",
+      "requirements": [
+        "FR-006",
+        "FR-007",
+        "FR-008",
+        "FR-058",
+        "FR-063",
+        "FR-064",
+        "FR-065",
+        "FR-066"
+      ],
+      "prerequisites": [
+        "T026",
+        "T012",
+        "T014"
+      ],
+      "summary": " [P0] KIS workflow/UI** (Owner: TV5; Reqs: FR-006-008, FR-058, FR-063-066) Implement KIS mode/grid/inspection actions/adapters. Prereq: T026,T012,T014. Accept: operator selects only canonical candidate/neighbor and logs run/config/latency. Final-live: corrected WP03."
+    },
+    {
+      "id": "T028",
+      "requirements": [
+        "FR-059",
+        "FR-060",
+        "FR-067"
+      ],
+      "prerequisites": [
+        "T023"
+      ],
+      "summary": " [P] [P0] Feedback state/UI tests** (Owner: TV5; Reqs: FR-059-060, FR-067) Test canonical reference, original query/text/history, separate snapshots, reset, no basket mutation, candidate revalidation and unavailable WP08. Prereq: T023. Accept: deterministic. Final-live: corrected WP03 for full coverage."
+    },
+    {
+      "id": "T029",
+      "requirements": [
+        "FR-059",
+        "FR-060",
+        "FR-067"
+      ],
+      "prerequisites": [
+        "T020",
+        "T028"
+      ],
+      "summary": " [P0] Feedback workflow/UI** (Owner: TV5; Reqs: FR-059-060, FR-067) Implement reference selection, history/refined view/reset through TV4 WP08 seam. Prereq: T020,T028. Accept: workflow usable with supported current capability; advanced model gate visible/scoped. Final-live: selected model benchmark if applicable."
+    },
+    {
+      "id": "T030",
+      "requirements": [
+        "FR-009",
+        "FR-010",
+        "FR-011",
+        "FR-012",
+        "FR-013",
+        "FR-014",
+        "FR-015",
+        "FR-016",
+        "FR-061",
+        "FR-066",
+        "FR-067"
+      ],
+      "prerequisites": [
+        "T023"
+      ],
+      "summary": " [P] [P0] VQA tests** (Owner: TV5; Reqs: FR-009-016, FR-061, FR-066-067) Test empty/weak evidence, OCR/ASR/Object/multiframe paths, proposal/confidence, retry limit, exact correction, edit/confirm, exact approved answer preservation and VLM degradation. Prereq: T023. Accept: no auto-confirm. Final-live: corrected WP04/VLM for respective cases."
+    },
+    {
+      "id": "T031",
+      "requirements": [
+        "FR-009",
+        "FR-010",
+        "FR-011",
+        "FR-012",
+        "FR-013",
+        "FR-014",
+        "FR-015",
+        "FR-016",
+        "FR-061",
+        "FR-066",
+        "FR-067"
+      ],
+      "prerequisites": [
+        "T016",
+        "T030",
+        "T014"
+      ],
+      "summary": " [P0] VQA workflow/UI** (Owner: TV5; Reqs: FR-009-016, FR-061, FR-066-067) Implement evidence panels, proposal/manual state, editable approval and canonical selection. Prereq: T016,T030,T014. Accept: approved text becomes immutable submission state. Final-live: corrected WP04 and approved VLM/verifier."
+    },
+    {
+      "id": "T032",
+      "requirements": [
+        "FR-017",
+        "FR-018",
+        "FR-019",
+        "FR-020",
+        "FR-021",
+        "FR-062",
+        "FR-067"
+      ],
+      "prerequisites": [
+        "T023"
+      ],
+      "summary": " [P] [P0] TRAKE tests** (Owner: TV5; Reqs: FR-017-021, FR-062, FR-067) Test ordered events/count, hypotheses/video, semantic order, wrong-video semantics, timeline, locks/unlock, manual correction, exact event frame, no accidental reorder and pre-basket rejection. Prereq: T023. Accept: exactly N positions; numerical sort never redefines order. Final-live: corrected upstream coverage."
+    },
+    {
+      "id": "T033",
+      "requirements": [
+        "FR-017",
+        "FR-018",
+        "FR-019",
+        "FR-020",
+        "FR-021",
+        "FR-062",
+        "FR-067"
+      ],
+      "prerequisites": [
+        "T012",
+        "T032",
+        "T014"
+      ],
+      "summary": " [P0] TRAKE workflow/UI** (Owner: TV5; Reqs: FR-017-021, FR-062, FR-067) Implement immutable event slots/timeline/hypotheses/locks/corrections/validation. Prereq: T012,T032,T014. Accept: only complete canonical chain enters basket. Final-live: corrected WP03/WP04."
+    },
+    {
+      "id": "T034",
+      "requirements": [
+        "FR-064",
+        "FR-065",
+        "FR-066",
+        "FR-067"
+      ],
+      "prerequisites": [
+        "T023"
+      ],
+      "summary": " [P] [P0] Evidence rendering tests** (Owner: TV5; Reqs: FR-064-067) Test OCR overlays, ASR timing/context, Object bbox/crops, Metadata, selected frames and source/model/run provenance with missing branches. Prereq: T023. Accept: provenance not flattened; degradation visible. Final-live: corrected WP04."
+    },
+    {
+      "id": "T035",
+      "requirements": [
+        "FR-064",
+        "FR-065",
+        "FR-066",
+        "FR-067"
+      ],
+      "prerequisites": [
+        "T034"
+      ],
+      "summary": " [P0] Evidence/provenance UI** (Owner: TV5; Reqs: FR-064-067) Implement typed renderers and safe overlays. Prereq: T034. Accept: available evidence displayed accurately; absent data not fabricated. Final-live: corrected WP04."
+    },
+    {
+      "id": "T036",
+      "requirements": [
+        "FR-067"
+      ],
+      "prerequisites": [
+        "T027",
+        "T029",
+        "T031",
+        "T033"
+      ],
+      "summary": " [P] [P0] Keyboard/operator tests** (Owner: TV5; Reqs: FR-067) Define/test documented shortcuts for mode/search/grid/player/step/reference/confirm/lock/basket/reset with focus guards and no destructive ambiguity. Prereq: T027,T029,T031,T033. Accept: automated state tests plus manual checklist. Final-live: manual target verification."
+    },
+    {
+      "id": "T037",
+      "requirements": [
+        "FR-067"
+      ],
+      "prerequisites": [
+        "T036"
+      ],
+      "summary": " [P0] Keyboard shortcuts** (Owner: TV5; Reqs: FR-067) Implement shortcut registry/help and focus-safe handlers. Prereq: T036. Accept: no shortcut bypasses confirmation/canonical validation/order locks. Final-live: operator acceptance."
+    },
+    {
+      "id": "T038",
+      "requirements": [
+        "FR-027",
+        "FR-028",
+        "FR-029",
+        "FR-036",
+        "FR-037",
+        "FR-038",
+        "FR-039",
+        "FR-071"
+      ],
+      "prerequisites": [
+        "T023"
+      ],
+      "summary": " [P] [P0] Basket guard tests** (Owner: TV5; Reqs: FR-027-029, FR-036-039, FR-071) Test 0/100/101, visible rank, no hidden sort, canonical proof, refined candidates, exact neighbors, VQA approval and TRAKE validity. Prereq: T023. Accept: invalid entry fails closed. Final-live: none."
+    },
+    {
+      "id": "T039",
+      "requirements": [
+        "FR-027",
+        "FR-028",
+        "FR-029",
+        "FR-036",
+        "FR-037",
+        "FR-038",
+        "FR-039",
+        "FR-071"
+      ],
+      "prerequisites": [
+        "T038"
+      ],
+      "summary": " [P0] Submission basket** (Owner: TV5; Reqs: FR-027-029, FR-036-039, FR-071) Implement query-scoped ordered basket/readiness audit. Prereq: T038. Accept: all workflows share guards and feedback never mutates basket. Final-live: none."
+    },
+    {
+      "id": "T040",
+      "requirements": [
+        "FR-030",
+        "FR-031",
+        "FR-032",
+        "FR-033",
+        "FR-034",
+        "FR-035",
+        "FR-036",
+        "FR-037",
+        "FR-038",
+        "FR-039",
+        "FR-057"
+      ],
+      "prerequisites": [
+        "T038"
+      ],
+      "summary": " [P] [P0] CSV/export goldens** (Owner: TV5; Reqs: FR-030-039, FR-057) Add headerless KIS/Q&A/TRAKE, <=100, integer/`.mp4`, exact answer roundtrip, TRAKE N/order, filename and provisional-version tests. Prereq: T038. Accept: current TV4 exporter shown incompatible; valid/invalid goldens deterministic. Final-live: re-review on official 2026 guide."
+    },
+    {
+      "id": "T041",
+      "requirements": [
+        "FR-030",
+        "FR-031",
+        "FR-032",
+        "FR-033",
+        "FR-034",
+        "FR-035",
+        "FR-036",
+        "FR-037",
+        "FR-038",
+        "FR-039",
+        "FR-057"
+      ],
+      "prerequisites": [
+        "T039",
+        "T040"
+      ],
+      "summary": " [P0] CSV exporter/validator** (Owner: TV5; Reqs: FR-030-039, FR-057) Implement independent standards-compliant serializer/parser/validator in `tv5/submission/`. Prereq: T039,T040. Accept: approved answer unchanged except escaping; all detectable errors reported; fail closed. Final-live: official guide review."
+    },
+    {
+      "id": "T042",
+      "requirements": [
+        "FR-040",
+        "FR-041",
+        "FR-042",
+        "FR-078"
+      ],
+      "prerequisites": [
+        "T041"
+      ],
+      "summary": " [P0] ZIP/package tests and implementation** (Owner: TV5; Reqs: FR-040-042, FR-078) Test traversal, root CSV, missing/duplicate/unexpected/malformed files and reopen validation; implement top-level `submission/` ZIP. Prereq: T041. Accept: immutable digest/report and no upload. Final-live: provisional rules confirmed/reviewed."
+    },
+    {
+      "id": "T043",
+      "requirements": [
+        "FR-051",
+        "FR-078"
+      ],
+      "prerequisites": [
+        "T041"
+      ],
+      "summary": " [P] [P0] CLI/API fallback tests** (Owner: TV5; Reqs: FR-051, FR-078) Test non-UI validate/export/package and failure behavior; characterize any approved API seam. Prereq: T041. Accept: CLI works without UI; API marked unavailable unless real approved endpoint exists. Final-live: none."
+    },
+    {
+      "id": "T044",
+      "requirements": [
+        "FR-051",
+        "FR-078"
+      ],
+      "prerequisites": [
+        "T042",
+        "T043"
+      ],
+      "summary": " [P0] CLI/API fallback** (Owner: TV5; Reqs: FR-051, FR-078) Implement CLI preparation/validation; implement API adapter only if T043 proves approved contract. Prereq: T042,T043. Accept: never auto-uploads. Final-live: target rehearsal."
+    },
+    {
+      "id": "T045",
+      "requirements": [
+        "FR-043",
+        "FR-044",
+        "FR-045",
+        "FR-046",
+        "FR-076",
+        "FR-077"
+      ],
+      "prerequisites": [],
+      "summary": " [P] [P0] Official/internal metric tests** (Owner: TV5; Reqs: FR-043-046, FR-076-077) Add organizer KIS/VQA/TRAKE/R@k/Final=0.74 goldens, Hit@K, alignment, latency/error and missing-adjudication `INCOMPLETE`. Prereq: none. Accept: exact formulas; no exact-string substitute. Final-live: official ground truth for dataset-ready status."
+    },
+    {
+      "id": "T046",
+      "requirements": [
+        "FR-043",
+        "FR-044",
+        "FR-045",
+        "FR-046",
+        "FR-076",
+        "FR-077"
+      ],
+      "prerequisites": [
+        "T045",
+        "T025"
+      ],
+      "summary": " [P0] Metric/report engine** (Owner: TV5; Reqs: FR-043-046, FR-076-077) Implement metrics, benchmark/ablation/error/mock report schema and UI/CLI adapter. Prereq: T045,T025. Accept: metric implementation ready independently of dataset readiness. Final-live: valid ground truth/adjudication."
+    },
+    {
+      "id": "T047",
+      "requirements": [
+        "FR-076",
+        "FR-077"
+      ],
+      "prerequisites": [
+        "T004"
+      ],
+      "summary": " [P] [P0] Preprocessing report ingestion tests** (Owner: TV5; Reqs: FR-076-077) Test validated upstream throughput/storage report ingestion, schema/provenance/missing/incompatible state. Prereq: T004. Accept: no preprocessing command invoked. Final-live: approved reports."
+    },
+    {
+      "id": "T048",
+      "requirements": [
+        "FR-076",
+        "FR-077"
+      ],
+      "prerequisites": [
+        "T047",
+        "T046"
+      ],
+      "summary": " [P0] Preprocessing report ingestion** (Owner: TV5; Reqs: FR-076-077) Implement read-only report adapter/display. Prereq: T047,T046. Accept: source/run provenance and explicit unavailable status. Final-live: accepted reports."
+    },
+    {
+      "id": "T049",
+      "requirements": [
+        "FR-047",
+        "FR-048",
+        "FR-049",
+        "FR-050",
+        "FR-058",
+        "FR-059",
+        "FR-060",
+        "FR-061",
+        "FR-062",
+        "FR-063",
+        "FR-064",
+        "FR-065",
+        "FR-066",
+        "FR-067"
+      ],
+      "prerequisites": [
+        "T012",
+        "T016",
+        "T018",
+        "T020",
+        "T039",
+        "T046"
+      ],
+      "summary": " [P] [P0] Complete fixture/degraded suite** (Owner: TV5/TV4; Reqs: FR-047-050, FR-058-067) Add deterministic canonical fixtures for KIS/Feedback/VQA/TRAKE/evidence/exact neighbors and each dependency failure. Prereq: T012,T016,T018,T020,T039,T046. Accept: fixture/live semantics identical and fixture label explicit. Final-live: none."
+    },
+    {
+      "id": "T050",
+      "requirements": [
+        "FR-073",
+        "FR-074",
+        "FR-075"
+      ],
+      "prerequisites": [
+        "T021",
+        "T049"
+      ],
+      "summary": " [P0] Current-artifact integration** (Owner: TV5; Reqs: FR-073-075) Run validator, current 3-video WP03 KIS/Feedback where supported, accepted exact-frame consumption/media, WP04 `HANDOVER PENDING` plus scoped degraded behavior, all fixture workflows, export/metrics/telemetry; record results. Prereq: T021,T049. Accept: supported checks pass and limitations remain accurately classified as `PARTIAL`, `HANDOVER PENDING` or `CODE GAP`; no existing capability is called missing solely for lack of a TV4 endpoint. Final-live: none."
+    },
+    {
+      "id": "T051",
+      "requirements": [
+        "FR-052",
+        "FR-053",
+        "FR-054",
+        "FR-055",
+        "FR-078",
+        "FR-079"
+      ],
+      "prerequisites": [
+        "T023",
+        "T044",
+        "T049"
+      ],
+      "summary": " [P] [P0] Compose/config-lock tests** (Owner: TV5+TV1 support; Reqs: FR-052-055, FR-078-079) Test read-only mounts, external upstream URLs, mutable persistence, probes, config digest/secret exclusion and fresh start. Prereq: T023,T044,T049. Accept: no preprocessing/build of upstream assets. Final-live: target host."
+    },
+    {
+      "id": "T052",
+      "requirements": [
+        "FR-052",
+        "FR-053",
+        "FR-054",
+        "FR-055",
+        "FR-078",
+        "FR-079"
+      ],
+      "prerequisites": [
+        "T051"
+      ],
+      "summary": " [P0] Docker Compose/config lock** (Owner: TV5+TV1 support; Reqs: FR-052-055, FR-078-079) Implement WP13 Compose/env/config lock/health startup. Prereq: T051. Accept: fixture/current modes start reproducibly; upstream mounts read-only. Final-live: frozen corrected artifacts/config."
+    },
+    {
+      "id": "T053",
+      "requirements": [
+        "FR-050",
+        "FR-054",
+        "FR-055",
+        "FR-078",
+        "FR-079"
+      ],
+      "prerequisites": [
+        "T023"
+      ],
+      "summary": " [P] [P0] Backup/restore tests** (Owner: TV5; Reqs: FR-050, FR-054-055, FR-078-079) Test backup manifest/checksums, interrupted write, restore/revalidation and exclusion of upstream artifacts/secrets. Prereq: T023. Accept: restored state not ready until revalidated. Final-live: target rehearsal."
+    },
+    {
+      "id": "T054",
+      "requirements": [
+        "FR-050",
+        "FR-054",
+        "FR-055",
+        "FR-078",
+        "FR-079"
+      ],
+      "prerequisites": [
+        "T053",
+        "T052"
+      ],
+      "summary": " [P0] Backup/restore implementation** (Owner: TV5; Reqs: FR-050, FR-054-055, FR-078-079) Implement scripts/docs for WP13 mutable state/config lock. Prereq: T053,T052. Accept: repeatable recovery with audit. Final-live: target pass."
+    },
+    {
+      "id": "T055",
+      "requirements": [
+        "FR-051",
+        "FR-052",
+        "FR-053",
+        "FR-054",
+        "FR-055",
+        "FR-078",
+        "FR-079"
+      ],
+      "prerequisites": [
+        "T044",
+        "T050",
+        "T052",
+        "T054"
+      ],
+      "summary": " [P0] RUN_BOOK/operator handoff** (Owner: TV5+TV1 support; Reqs: FR-051-055, FR-078-079) Write `RUN_BOOK.md` for three modes, service order, readiness/degradation, exact gate, submission fallbacks, telemetry, shutdown/recovery and no preprocessing. Prereq: T044,T050,T052,T054. Test first: non-owner dry-run checklist. Accept: another member can operate fixture/current partial. Final-live: final mode and target evidence."
+    },
+    {
+      "id": "T056",
+      "requirements": [
+        "FR-063",
+        "FR-074"
+      ],
+      "prerequisites": [
+        "T004"
+      ],
+      "summary": " [P0] Corrected WP03 acceptance** (Owner: external handover + TV5 validator; Reqs: FR-063, FR-074) Read-only validate schema/digests/index-map/vector/video/selected-frame coverage/canonical mapping/run; freeze approved root/config. Prereq: T004; External: Claim 1 handover. Accept: `READY`, expected corpus coverage from authoritative registries. No repair/preprocess."
+    },
+    {
+      "id": "T057",
+      "requirements": [
+        "FR-064",
+        "FR-075"
+      ],
+      "prerequisites": [
+        "T004"
+      ],
+      "summary": " [P0] Corrected WP04 acceptance** (Owner: external handover + TV5 validator; Reqs: FR-064, FR-075) Read-only validate handed-over OCR/ASR/Object/Metadata records, linkage/timing/evidence/provenance/indexes; freeze. Prereq: T004; External: Claim 2 corrected modality handover. Accept: required branches `READY`. Producer source/contracts already exist; no WP13 repair/preprocess."
+    },
+    {
+      "id": "T058",
+      "requirements": [
+        "FR-058",
+        "FR-059",
+        "FR-060",
+        "FR-061",
+        "FR-062",
+        "FR-063",
+        "FR-064",
+        "FR-065",
+        "FR-066",
+        "FR-067",
+        "FR-068",
+        "FR-069",
+        "FR-070",
+        "FR-071",
+        "FR-072",
+        "FR-073",
+        "FR-074",
+        "FR-075",
+        "FR-076",
+        "FR-077",
+        "FR-078",
+        "FR-079"
+      ],
+      "prerequisites": [
+        "T055",
+        "T056",
+        "T057"
+      ],
+      "summary": " [P0] Full live integration** (Owner: team; Reqs: FR-058-079) Rerun all modality, RRF, KIS/Feedback/VQA/TRAKE, exact-frame, media, health, submission, evaluation and telemetry integrations without architecture change. Prereq: T055,T056,T057. Accept: all applicable live contracts pass."
+    },
+    {
+      "id": "T059",
+      "requirements": [
+        "FR-067",
+        "FR-079"
+      ],
+      "prerequisites": [
+        "T058"
+      ],
+      "summary": " [P0] Live E2E and manual UI** (Owner: TV5; Reqs: FR-067, FR-079) Execute all three task journeys plus Feedback, neighbors, evidence, keyboard, basket, CSV/ZIP/CLI, degraded/recovery; measure latency/time-first-correct/error. Prereq: T058. Accept: no known P0 and manual evidence recorded."
+    },
+    {
+      "id": "T060",
+      "requirements": [
+        "FR-056",
+        "FR-077",
+        "FR-079"
+      ],
+      "prerequisites": [
+        "T059",
+        "T046",
+        "T048"
+      ],
+      "summary": " [P0] Mock competitions** (Owner: team; Reqs: FR-056, FR-077, FR-079) Run Benchmark -> Ablation -> Error Analysis -> Mock -> Iterate until three consecutive mocks have no known P0. Prereq: T059,T046,T048. Accept: three signed reports/config IDs; reset count after P0."
+    },
+    {
+      "id": "T061",
+      "requirements": [
+        "FR-052",
+        "FR-053",
+        "FR-054",
+        "FR-055",
+        "FR-078",
+        "FR-079"
+      ],
+      "prerequisites": [
+        "T060"
+      ],
+      "summary": " [P0] Target-machine acceptance/release freeze** (Owner: TV5+TV1 support; Reqs: FR-052-055, FR-078-079) Non-owner performs fresh start, readiness/health, live task flows, exact-neighbor proof sample, golden package, CLI fallback, backup/restore and config/artifact freeze. Prereq: T060. Accept: cross-review, no owner-only knowledge, stable tag/commit prepared but commit/push only under separate authorization."
+    }
+  ]
+}

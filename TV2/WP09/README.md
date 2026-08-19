@@ -26,6 +26,28 @@ Custom decoders must expose `mapping_guaranteed = True` and honor the
 `max_frames` argument on `frames_between`; `MappedVideoDecoder` provides both.
 WP09 rejects undecorated duck-typed decoders before it reads video data.
 
+## Exact-neighbor identity contract (E4-1A)
+
+Selected WP02 records are anchors, not a complete original-frame authority.
+`run_v1_batch1`'s producer code assigns a selected record with
+`frame.index if hasattr(frame, "index") else frame_idx_in_stream`; the run
+records do not preserve which branch/version was used. Consequently, an anchor
+PTS and a locally decoded offset cannot prove a neighbor's canonical global
+`frame_id`.
+
+`ExactFrameResolver` now makes a neighbor selectable only when an integration
+supplies a read-only `CanonicalFrameAuthority` record for that exact original
+PTS. It also verifies the original path, SHA-256, time base,
+`preprocess_run_id`, mapping/media references, and an explicit certified
+producer/resolver ordering compatibility statement. It writes no map and does
+not backfill artifacts. Without that authority, every neighbor response is
+`canonical_identity_unproven` and non-selectable; agreement with another
+selected anchor is only diagnostic, never proof.
+
+For repeated UI stepping, retain `certified_anchor_frame_id` and a cumulative
+requested offset. Do not promote a returned neighbor into a trusted anchor
+unless a future proof policy explicitly says so.
+
 `status` is `refined`, `partial` (budget exhausted after trustworthy automated
 scores) or `manual_only` (frames decode but scorer is unavailable/OOM). A decode
 or mapping failure raises/reports `RefinementUnavailable`; it is not converted

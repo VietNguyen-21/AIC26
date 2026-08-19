@@ -6,6 +6,11 @@ preprocess_run_id: run_v1_batch1
 
 tv1:
   base_url: "http://127.0.0.1:8000"
+  original_media_root: "../../tv1/data/raw"
+  media_registry_path: "../../tv1/data/runs/run_v1_batch1/manifest/corpus_manifest.json"
+  allowed_media_extensions: [".mp4"]
+  derivative_asset_root: "../../tv1/data/runs/run_v1_batch1"
+  allowed_image_extensions: [".jpg", ".jpeg", ".png"]
 
 tv3:
   base_url: "http://127.0.0.1:8100"
@@ -14,17 +19,25 @@ tv2_visual:
   enabled: true
   python_executable: "../../tv2_1/WP03/.venvs/coordinator/Scripts/python.exe"
   wp03_cwd: "../../tv2_1/WP03"
-  artifact_root: "../../tv2_1/WP03/artifacts/smoke-run-1"
+  artifact_root: "../../tv2_1/WP03/artifacts/full-run-1"
   runtime_root: "../../tv2_1/WP03"
   runtime_profile: "../../tv2_1/WP03/configs/runtime.windows.yaml"
   top_k: 100
   candidate_k_per_model: 200
 
 tv2_refine:
-  enabled: false
+  enabled: true
   python_executable: "../../tv2_1/WP09/.venv/Scripts/python.exe"
   wp09_cwd: "../../tv2_1/WP09"
   config_path: "../../tv2_1/WP09/configs/default.yaml"
+  # Deployment supplies this absolute runtime path.  It is deliberately not
+  # a tracked-tree relative path because TV4 and WP09 have distinct layouts.
+  exact_certification_env: "TV4_EXACT_CERTIFICATION_PATH"
+
+tv2_feedback:
+  enabled: true
+  sqlite_path: "data/feedback_sessions.db"
+
 
 fusion:
   rrf_k: 60

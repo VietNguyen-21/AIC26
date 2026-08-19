@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -19,6 +20,7 @@ from .clients.tv2_refine_client import TV2RefineClient
 from .clients.tv2_visual_client import TV2VisualClient
 from .clients.tv3_client import TV3Client
 from .kis_pipeline import KisServices, run_kis_query
+from .media_identity import MediaRecord
 from .submission import write_kis_csv, write_qa_csv, write_trake_json
 from .trake_pipeline import run_trake_query
 from .wp11_vqa import RuleBasedFallbackEngine, answer_query
@@ -48,13 +50,91 @@ def build_services(config: dict) -> KisServices:
             python_executable=str((base / tv2r["python_executable"]).resolve()),
             wp09_cwd=(base / tv2r["wp09_cwd"]).resolve(),
             config_path=(base / tv2r["config_path"]).resolve(),
+            tv1_base_url=config["tv1"]["base_url"],
+            exact_certification_path=_exact_certification_path(base, tv2r),
+        )
+    media_registry = None
+    registry_path = config.get("tv1", {}).get("media_registry_path")
+    if registry_path:
+        raw_registry = json.loads((base / registry_path).read_text(encoding="utf-8"))
+        if not isinstance(raw_registry, list):
+            raise ValueError("tv1.media_registry_path must contain a JSON list")
+        records = [_media_record_from_authority(item, config.get("preprocess_run_id", "unknown")) for item in raw_registry]
+        media_registry = {record.video_id: record for record in records}
+        if len(media_registry) != len(records):
+            raise ValueError("media registry contains duplicate video_id")
+    feedback = None
+    tv2f = config.get("tv2_feedback", {})
+    if tv2f.get("enabled"):
+        from .adapters.wp08_adapter import Wp08FeedbackAdapter
+        db_path = (base / tv2f.get("sqlite_path", "sessions.db")).resolve()
+        feedback = Wp08FeedbackAdapter(
+            db_path=db_path,
+            preprocess_run_id=config.get("preprocess_run_id", "unknown"),
+            fixture_mode=False,
+            pool_provider=lambda q: _build_live_pool_from_visual(visual, q, config.get("preprocess_run_id", "unknown")),
         )
     return KisServices(
         tv1=TV1Client(config["tv1"]["base_url"]),
         tv3=TV3Client(config["tv3"]["base_url"]),
         visual=visual,
         refine=refine,
+        feedback=feedback,
         preprocess_run_id=config.get("preprocess_run_id", "unknown"),
+        original_media_root=(base / config["tv1"]["original_media_root"]).resolve() if config.get("tv1", {}).get("original_media_root") else None,
+        media_registry=media_registry,
+        allowed_media_extensions=frozenset(str(value).lower() for value in config.get("tv1", {}).get("allowed_media_extensions", [])),
+        derivative_asset_root=(base / config["tv1"]["derivative_asset_root"]).resolve() if config.get("tv1", {}).get("derivative_asset_root") else None,
+        allowed_image_extensions=frozenset(str(value).lower() for value in config.get("tv1", {}).get("allowed_image_extensions", [])),
+    )
+
+
+def _build_live_pool_from_visual(visual_client: TV2VisualClient, query: str, preprocess_run_id: str):
+    from wp08.contracts import CandidateId, CandidateMetadata, SessionPool
+    candidates = visual_client.search("live-wp08-pool", query)
+    if not candidates:
+        raise ValueError("visual search returned zero candidates for feedback session")
+    cid_list = tuple(CandidateId(c.video_id, c.frame_id) for c in candidates)
+    meta_list = tuple(
+        CandidateMetadata(cid, c.timestamp_ms, c.evidence_refs[0].removeprefix("keyframe:") if c.evidence_refs else f"keyframes/{c.video_id}/{c.frame_id}.jpg")
+        for cid, c in zip(cid_list, candidates)
+    )
+    return SessionPool(
+        wp03_run_id=preprocess_run_id,
+        candidates=cid_list,
+        candidate_metadata=meta_list,
+        snapshot={"live": True, "query": query, "pool_size": len(cid_list)},
+        provenance={"mode": "live", "source": "wp03_visual"},
+    )
+
+
+def _exact_certification_path(base: Path, config: dict) -> Path:
+    env_name = config.get("exact_certification_env")
+    if env_name:
+        value = os.environ.get(str(env_name))
+        if not value:
+            raise ValueError(f"{env_name} must name the runtime WP09 certification record")
+        return Path(value).resolve(strict=True)
+    if config.get("exact_certification_path"):
+        return (base / config["exact_certification_path"]).resolve(strict=True)
+    raise ValueError("tv2_refine exact certification authority is required")
+
+
+def _media_record_from_authority(item: object, preprocess_run_id: str) -> MediaRecord:
+    if not isinstance(item, dict):
+        raise ValueError("media registry contains a non-object record")
+    # WP00's corpus manifest is the authoritative path/digest authority.  It
+    # predates WP01's time-base field, which WP09 independently obtains from
+    # TV1's live media authority before it emits a proof.
+    video_id = item.get("video_id", "")
+    return MediaRecord(
+        video_id=str(video_id),
+        original_video_path=str(item.get("original_video_path", "")),
+        source_sha256=str(item.get("source_sha256", "")),
+        preprocess_run_id=str(item.get("preprocess_run_id", preprocess_run_id)),
+        time_base=str(item.get("time_base", "")),
+        media_record_ref=str(item.get("media_record_ref", f"manifest/{video_id}")),
+        mapping_ref=str(item.get("mapping_ref", f"tv1-frames/{video_id}")),
     )
 
 

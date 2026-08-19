@@ -20,16 +20,22 @@ as the schema hand-off TV5 needs -- no separate schema doc to keep in sync.
 from __future__ import annotations
 
 import os
+import mimetypes
+from io import BytesIO
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from . import fixtures
 from .cli import _load_config, build_services
 from .kis_pipeline import KisServices, run_kis_query
+from .contracts import SearchRequest, exact_neighbor_response_is_safe
+from .media_identity import resolve_derivative_image_path, resolve_original_media_path
+from .exact_identity import certified_step_request
 from .trake_pipeline import run_trake_query
 from .wp11_vqa import RuleBasedFallbackEngine, answer_query
 
@@ -38,6 +44,9 @@ CONFIG_PATH = os.environ.get("TV4_CONFIG", "configs/default.yaml")
 CORS_ORIGINS = [o.strip() for o in os.environ.get("TV4_CORS_ORIGINS", "*").split(",") if o.strip()]
 
 _services: KisServices | None = None
+
+_MEDIA_CHUNK_BYTES = 64 * 1024
+_EXACT_IMAGE_MAX_DECODED_FRAMES = 256
 
 
 class TV4ConfigError(RuntimeError):
@@ -91,6 +100,93 @@ class TrakeRequest(BaseModel):
     strategy: str = Field(default="dp", pattern="^(dp|greedy)$")
 
 
+class ExactNeighborRequest(BaseModel):
+    video_id: str
+    frame_id: int = Field(ge=0)
+    timestamp_ms: int = Field(ge=0)
+    offsets: list[int] = Field(default_factory=lambda: [0])
+    certified_anchor_frame_id: int | None = Field(default=None, ge=0)
+    certified_anchor_timestamp_ms: int | None = Field(default=None, ge=0)
+    cumulative_offset: int = 0
+
+    def model_post_init(self, __context: Any) -> None:
+        if not self.video_id.strip() or not self.offsets or len(self.offsets) > 32:
+            raise ValueError("video_id and 1-32 offsets are required")
+        if (self.certified_anchor_frame_id is None) != (self.certified_anchor_timestamp_ms is None):
+            raise ValueError("certified anchor frame_id and timestamp_ms must be supplied together")
+
+
+class FeedbackStartApiRequest(BaseModel):
+    session_id: str = Field(min_length=1)
+    original_query: str = Field(min_length=1)
+
+
+class FeedbackRefineApiRequest(BaseModel):
+    session_id: str = Field(min_length=1)
+    video_id: str = Field(min_length=1)
+    frame_id: int = Field(ge=0)
+    source_candidate_frame_id: int | None = Field(default=None, ge=0)
+    feedback_text: str = Field(min_length=1, max_length=300)
+    expected_revision: int = Field(ge=0)
+
+
+class FeedbackUndoApiRequest(BaseModel):
+    session_id: str = Field(min_length=1)
+    expected_revision: int = Field(ge=0)
+
+
+class FeedbackResetApiRequest(BaseModel):
+    session_id: str = Field(min_length=1)
+    expected_revision: int = Field(ge=0)
+
+
+
+def _parse_byte_range(range_header: str, file_size: int) -> tuple[int, int]:
+    """Parse exactly one browser byte range into inclusive bounds."""
+    if file_size <= 0 or not range_header.startswith("bytes="):
+        raise ValueError("invalid byte range")
+    value = range_header[6:].strip()
+    if "," in value or "-" not in value:
+        raise ValueError("only one byte range is supported")
+    left, right = value.split("-", 1)
+    if not left:
+        suffix = int(right)
+        if suffix <= 0:
+            raise ValueError("invalid suffix range")
+        return max(0, file_size - suffix), file_size - 1
+    start = int(left)
+    end = int(right) if right else file_size - 1
+    if start < 0 or start >= file_size or end < start:
+        raise ValueError("range is outside the file")
+    return start, min(end, file_size - 1)
+
+
+def _iter_file_range(path: Path, start: int, end: int):
+    remaining = end - start + 1
+    with path.open("rb") as handle:
+        handle.seek(start)
+        while remaining:
+            chunk = handle.read(min(_MEDIA_CHUNK_BYTES, remaining))
+            if not chunk:
+                return
+            remaining -= len(chunk)
+            yield chunk
+
+
+def _media_path_or_404(services: KisServices, video_id: str) -> Path:
+    if services.original_media_root is None:
+        raise HTTPException(status_code=503, detail="original media unavailable: root is unconfigured")
+    try:
+        return resolve_original_media_path(
+            services.original_media_root, video_id, services.media_registry,
+            services.preprocess_run_id, services.allowed_media_extensions,
+        )
+    except ValueError as exc:
+        # Deliberately do not distinguish unknown, traversal and malformed
+        # registry entries to browser clients.
+        raise HTTPException(status_code=404, detail="original media unavailable") from exc
+
+
 @app.get("/health")
 def health() -> dict[str, Any]:
     if FIXTURE_MODE:
@@ -120,7 +216,7 @@ def kis_search(req: KisRequest) -> dict[str, Any]:
 @app.post("/vqa/answer")
 def vqa_answer(req: VqaRequest) -> dict[str, Any]:
     if FIXTURE_MODE:
-        return fixtures.VQA_RESPONSE
+        return fixtures.vqa_fixture_response(req.query_id)
     try:
         services = _get_services()
         ranked = run_kis_query(req.query_text, services, query_id=req.query_id, top_k=req.top_k)
@@ -131,8 +227,15 @@ def vqa_answer(req: VqaRequest) -> dict[str, Any]:
     if not ranked:
         return {"query_id": req.query_id or "vqa-query", "results": []}
     engine = RuleBasedFallbackEngine()  # TODO(TV4): swap for a real VLM/LLM AnswerEngine before demo
+    evidence_request = SearchRequest(
+        query_id=ranked[0].query_id,
+        task="VQA",
+        query_text=req.query_text,
+        question=req.question,
+        limit=min(req.top_k, 100),
+    )
     results = [
-        answer_query(c, req.question, services.tv1, services.tv3, engine)
+        answer_query(c, req.question, services.tv1, services.tv3, engine, request=evidence_request)
         for c in ranked[: req.top_k_answers]
     ]
     return {
@@ -147,6 +250,13 @@ def vqa_answer(req: VqaRequest) -> dict[str, Any]:
                 "answer": r.answer,
                 "verified": r.verified,
                 "manual_review": r.manual_fallback,
+                "proposal": r.proposal,
+                "approved": r.approved,
+                "verifier_status": r.verifier_status,
+                "retry_count": r.retry_count,
+                "manual_required": r.manual_required,
+                "status": r.status,
+                "degraded_reasons": list(r.degraded_reasons),
                 "evidence": r.evidence.to_json(),
             }
             for r in results
@@ -174,8 +284,367 @@ def trake_align(req: TrakeRequest) -> dict[str, Any]:
         "result": {
             "video_id": hyp.video_id,
             "frame_ids": list(hyp.frame_ids),
+            "timestamps_ms": list(hyp.timestamps_ms) if hyp.timestamps_ms else [0] * len(hyp.frame_ids),
             "event_scores": list(hyp.event_scores),
             "aggregate_score": hyp.aggregate_score,
             "preprocess_run_id": hyp.preprocess_run_id,
+            "candidates": [c.to_json() for c in hyp.candidates] if hyp.candidates else [],
         },
     }
+
+
+@app.api_route("/videos/{video_id}/stream", methods=["GET", "HEAD"])
+def stream_original_video(video_id: str, request: Request):
+    """Read-only, registry-contained original-video transport for browsers."""
+    if FIXTURE_MODE:
+        raise HTTPException(status_code=503, detail="media unavailable in fixture mode")
+    try:
+        services = _get_services()
+    except TV4ConfigError as exc:
+        raise HTTPException(status_code=503, detail=f"original media unavailable: {exc}") from exc
+    path = _media_path_or_404(services, video_id)
+    size = path.stat().st_size
+    media_type = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
+    headers = {"Accept-Ranges": "bytes", "Content-Length": str(size)}
+    if request.method == "HEAD":
+        return Response(status_code=200, headers={**headers, "Content-Type": media_type})
+    range_header = request.headers.get("range")
+    if not range_header:
+        return FileResponse(path, media_type=media_type, headers={"Accept-Ranges": "bytes"})
+    try:
+        start, end = _parse_byte_range(range_header, size)
+    except (TypeError, ValueError):
+        return Response(status_code=416, headers={"Content-Range": f"bytes */{size}"})
+    return StreamingResponse(
+        _iter_file_range(path, start, end), status_code=206, media_type=media_type,
+        headers={**headers, "Content-Range": f"bytes {start}-{end}/{size}", "Content-Length": str(end - start + 1)},
+    )
+
+
+def _derivative_frame_record(services: KisServices, video_id: str, frame_id: int) -> dict[str, Any]:
+    """Get a TV1-selected original-frame record from its owned metadata."""
+    try:
+        payload = services.tv1.frames(video_id)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="TV1 selected-frame metadata is unavailable") from exc
+    if not isinstance(payload, list):
+        raise HTTPException(status_code=502, detail="TV1 selected-frame metadata is malformed")
+    record = next((item for item in payload if isinstance(item, dict) and item.get("frame_id") == frame_id), None)
+    if record is None:
+        raise HTTPException(status_code=404, detail="selected frame is unavailable")
+    if record.get("video_id") != video_id or record.get("preprocess_run_id") != services.preprocess_run_id:
+        raise HTTPException(status_code=502, detail="TV1 selected-frame identity mismatch")
+    return record
+
+
+def _derivative_path(services: KisServices, record: dict[str, Any], field: str) -> Path:
+    if services.derivative_asset_root is None:
+        raise HTTPException(status_code=503, detail="derivative asset root is unconfigured")
+    raw_path = record.get(field)
+    if not isinstance(raw_path, str) or not raw_path:
+        raise HTTPException(status_code=404, detail="derivative image unavailable")
+    try:
+        return resolve_derivative_image_path(services.derivative_asset_root, raw_path, services.allowed_image_extensions)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="derivative image unavailable") from exc
+
+
+@app.get("/videos/{video_id}/frames/{frame_id}.jpg")
+def original_frame_image(video_id: str, frame_id: int):
+    """Display only a TV1-selected original frame via its keyframe derivative."""
+    if FIXTURE_MODE:
+        raise HTTPException(status_code=503, detail="media unavailable in fixture mode")
+    if frame_id < 0:
+        raise HTTPException(status_code=404, detail="original frame unavailable")
+    try:
+        services = _get_services()
+    except TV4ConfigError as exc:
+        raise HTTPException(status_code=503, detail=f"original media unavailable: {exc}") from exc
+    record = _derivative_frame_record(services, video_id, frame_id)
+    path = _derivative_path(services, record, "keyframe_path")
+    headers = {"X-Original-Frame-Id": str(frame_id), "X-Inspection-Derivative": "selected-keyframe"}
+    timestamp_ms = record.get("timestamp_ms")
+    if isinstance(timestamp_ms, int) and not isinstance(timestamp_ms, bool) and timestamp_ms >= 0:
+        headers["X-Timestamp-Ms"] = str(timestamp_ms)
+    return FileResponse(path, media_type=mimetypes.guess_type(path.name)[0] or "image/jpeg", headers=headers)
+
+
+@app.get("/videos/{video_id}/resolve")
+def resolve_original_timestamp(video_id: str, timestamp_ms: int, mode: str = "nearest") -> dict[str, Any]:
+    """Fail closed: playback time alone is not a canonical original-frame ID."""
+    if FIXTURE_MODE:
+        raise HTTPException(status_code=503, detail="media unavailable in fixture mode")
+    if timestamp_ms < 0 or mode not in {"nearest", "before", "after"}:
+        raise HTTPException(status_code=422, detail="invalid timestamp resolution request")
+    try:
+        services = _get_services()
+    except TV4ConfigError as exc:
+        raise HTTPException(status_code=503, detail=f"original media unavailable: {exc}") from exc
+    _media_path_or_404(services, video_id)
+    return {
+        "video_id": video_id,
+        "requested_timestamp_ms": timestamp_ms,
+        "mode": mode,
+        "canonical_frame_id": None,
+        "canonical_timestamp_ms": None,
+        "inspection_only": True,
+        "submission_selectable": False,
+        "state": "canonical_frame_unresolved_from_arbitrary_playback_timestamp",
+    }
+
+
+def _derivative_image(video_id: str, frame_id: int, field: str, label: str):
+    if FIXTURE_MODE:
+        raise HTTPException(status_code=503, detail="media unavailable in fixture mode")
+    if frame_id < 0:
+        raise HTTPException(status_code=404, detail="derivative image unavailable")
+    try:
+        services = _get_services()
+    except TV4ConfigError as exc:
+        raise HTTPException(status_code=503, detail=f"original media unavailable: {exc}") from exc
+    record = _derivative_frame_record(services, video_id, frame_id)
+    path = _derivative_path(services, record, field)
+    return FileResponse(path, media_type=mimetypes.guess_type(path.name)[0] or "image/jpeg", headers={"X-Original-Frame-Id": str(frame_id), "X-Inspection-Derivative": label})
+
+
+@app.get("/videos/{video_id}/keyframes/{frame_id}.jpg")
+def keyframe_image(video_id: str, frame_id: int):
+    return _derivative_image(video_id, frame_id, "keyframe_path", "keyframe")
+
+
+@app.get("/videos/{video_id}/thumbnails/{frame_id}.jpg")
+def thumbnail_image(video_id: str, frame_id: int):
+    return _derivative_image(video_id, frame_id, "thumbnail_path", "thumbnail")
+
+
+def _proven_exact_neighbors(req: ExactNeighborRequest, services: KisServices) -> tuple[dict[str, Any] | None, Path | None, tuple[int, ...], str | None]:
+    """Run the established WP09 proof flow; no caller may supply naked proof."""
+    if services.refine is None:
+        return None, None, (), "refiner_unavailable"
+    if services.original_media_root is None:
+        return None, None, (), "original_media_unconfigured"
+    try:
+        media_path = resolve_original_media_path(
+            services.original_media_root, req.video_id, services.media_registry,
+            services.preprocess_run_id, services.allowed_media_extensions,
+        )
+    except ValueError as exc:
+        return None, None, (), str(exc)
+    # Repeated UI stepping stays anchored to an already-certified selection.
+    # A returned neighbor is never silently promoted to a new anchor: the UI
+    # sends that same certified anchor plus its cumulative requested offset.
+    step_request = certified_step_request(
+        req.frame_id, req.timestamp_ms, req.offsets,
+        certified_anchor_frame_id=req.certified_anchor_frame_id,
+        certified_anchor_timestamp_ms=req.certified_anchor_timestamp_ms,
+        cumulative_offset=req.cumulative_offset,
+    )
+    anchor_frame_id = step_request.anchor_frame_id
+    anchor_timestamp_ms = step_request.anchor_timestamp_ms
+    effective_offsets = list(step_request.effective_offsets)
+    result = services.refine.neighbors(
+        {
+            "candidate": {"video_id": req.video_id, "frame_id": anchor_frame_id, "timestamp_ms": anchor_timestamp_ms},
+            "video_path": str(media_path),
+            "context": {
+                "preprocess_run_id": services.preprocess_run_id,
+                "media_record_ref": req.video_id,
+                "mapping_ref": f"tv1-frames/{req.video_id}",
+                "decoder_version": "pyav-tv4-adapter-2",
+                "model_version": "n/a",
+                "config_version": "default",
+            },
+            "offsets": effective_offsets,
+        }
+    )
+    authority = services.refine.exact_proof_authority
+    media = services.media_registry.get(req.video_id) if services.media_registry else None
+    if authority is None or media is None or result is None or not exact_neighbor_response_is_safe(
+        result, req.video_id, anchor_frame_id, effective_offsets, services.preprocess_run_id,
+        certification_id=authority.certification_id,
+        certification_report_sha256=authority.certification_report_sha256,
+        source_sha256=media.source_sha256,
+        time_base=media.time_base or None,
+    ):
+        return None, None, tuple(effective_offsets), "canonical_identity_unproven"
+    return result, media_path, tuple(effective_offsets), None
+
+
+def _decode_proven_frame_jpeg(media_path: Path, proof: dict[str, Any], *, av_module: Any | None = None) -> bytes:
+    """Render only one physically decoded frame equal to a WP09 proof record."""
+    try:
+        av = av_module
+        if av is None:
+            import av  # type: ignore[no-redef]
+        with av.open(str(media_path)) as container:
+            streams = container.streams.video
+            if not streams:
+                raise ValueError("video stream unavailable")
+            stream = streams[0]
+            if stream.time_base is None or str(stream.time_base) != proof["time_base"]:
+                raise ValueError("time-base mismatch")
+            container.seek(int(proof["pts"]), stream=stream, any_frame=False, backward=True)
+            matches = []
+            for decoded_count, frame in enumerate(container.decode(video=0), start=1):
+                if decoded_count > _EXACT_IMAGE_MAX_DECODED_FRAMES:
+                    raise ValueError("bounded decode exhausted")
+                if frame.pts is None:
+                    raise ValueError("decoded PTS unavailable")
+                timestamp_ms = int(float(frame.pts * stream.time_base) * 1000)
+                if frame.pts == proof["pts"] and str(stream.time_base) == proof["time_base"] and timestamp_ms == proof["timestamp_ms"]:
+                    matches.append(frame.to_image())
+                if timestamp_ms > proof["timestamp_ms"]:
+                    break
+            if len(matches) != 1:
+                raise ValueError("decoded frame does not uniquely match proof")
+            encoded = BytesIO()
+            matches[0].save(encoded, format="JPEG")
+            content = encoded.getvalue()
+            if not content:
+                raise ValueError("JPEG encoding returned no bytes")
+            return content
+    except Exception as exc:
+        raise ValueError("exact frame image unavailable") from exc
+
+
+@app.post("/exact-frame/neighbors")
+def exact_frame_neighbors(req: ExactNeighborRequest) -> dict[str, Any]:
+    """Expose only WP09-proven original neighbors for inspection/selection."""
+    if FIXTURE_MODE:
+        return fixtures.EXACT_NEIGHBOR_RESPONSE
+    try:
+        services = _get_services()
+    except TV4ConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    result, _, _, reason = _proven_exact_neighbors(req, services)
+    return result if result is not None else _exact_unavailable(req, services.preprocess_run_id, reason or "canonical_identity_unproven")
+
+
+@app.post("/exact-frame/image")
+def exact_frame_image(req: ExactNeighborRequest):
+    """Return a JPEG only after the existing WP09 proof is revalidated here."""
+    if FIXTURE_MODE:
+        raise HTTPException(status_code=503, detail="exact frame image unavailable in fixture mode")
+    if len(req.offsets) != 1:
+        raise HTTPException(status_code=422, detail="exact frame image requires exactly one signed offset")
+    try:
+        services = _get_services()
+    except TV4ConfigError as exc:
+        raise HTTPException(status_code=503, detail=f"exact frame image unavailable: {exc}") from exc
+    result, media_path, effective_offsets, reason = _proven_exact_neighbors(req, services)
+    if result is None or media_path is None:
+        raise HTTPException(status_code=409, detail=f"exact frame image unavailable: {reason or 'canonical_identity_unproven'}")
+    step = next((item for item in result["steps"] if item.get("offset") == effective_offsets[0]), None)
+    proof = step.get("frame") if isinstance(step, dict) else None
+    if not isinstance(proof, dict):
+        raise HTTPException(status_code=409, detail="exact frame image unavailable: proven step is unavailable")
+    try:
+        content = _decode_proven_frame_jpeg(media_path, proof)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail="exact frame image unavailable") from exc
+    headers = {
+        "X-Original-Video-Id": str(proof["video_id"]),
+        "X-Original-Frame-Id": str(proof["frame_id"]),
+        "X-PTS": str(proof["pts"]),
+        "X-Time-Base": str(proof["time_base"]),
+        "X-Timestamp-Ms": str(proof["timestamp_ms"]),
+        "X-Preprocess-Run-Id": str(proof["preprocess_run_id"]),
+        "X-Exact-Certification-Id": str(proof["certification_id"]),
+        "X-Exact-Certification-Report-Sha256": str(proof["certification_report_sha256"]),
+        "X-Exact-Source-Sha256": str(proof["source_sha256"]),
+        "X-Submission-Selectable": "true",
+    }
+    return Response(content=content, media_type="image/jpeg", headers=headers)
+
+
+def _exact_unavailable(req: ExactNeighborRequest, preprocess_run_id: str, reason: str) -> dict[str, Any]:
+    return {
+        "video_id": req.video_id,
+        "anchor_frame_id": req.frame_id,
+        "degraded_reason": reason,
+        "preprocess_run_id": preprocess_run_id,
+        "steps": [{"offset": offset, "frame": None, "degraded_reason": reason} for offset in req.offsets],
+    }
+
+
+_fixture_feedback_adapter: Any = None
+
+
+def _get_feedback_adapter():
+    global _fixture_feedback_adapter
+    if FIXTURE_MODE:
+        if _fixture_feedback_adapter is None:
+            from .adapters.wp08_adapter import Wp08FeedbackAdapter
+            _fixture_feedback_adapter = Wp08FeedbackAdapter(fixture_mode=True)
+        return _fixture_feedback_adapter
+    try:
+        services = _get_services()
+    except TV4ConfigError as exc:
+        raise HTTPException(status_code=503, detail=f"feedback unavailable: {exc}") from exc
+    if services.feedback is None:
+        raise HTTPException(status_code=503, detail="WP08 feedback service is disabled or unconfigured")
+    return services.feedback
+
+
+def _handle_feedback_call(fn: Any) -> dict[str, Any]:
+    from wp08.contracts import (
+        FeedbackValidationError,
+        RevisionConflict,
+        SessionExpired,
+        ModelRankingFailed,
+    )
+    try:
+        return fn()
+    except FeedbackValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except RevisionConflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except SessionExpired as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ModelRankingFailed as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"feedback service error: {exc}") from exc
+
+
+@app.post("/feedback/start")
+def feedback_start(req: FeedbackStartApiRequest) -> dict[str, Any]:
+    adapter = _get_feedback_adapter()
+    return _handle_feedback_call(lambda: adapter.start_session(req.session_id, req.original_query))
+
+
+@app.post("/feedback/refine")
+def feedback_refine(req: FeedbackRefineApiRequest) -> dict[str, Any]:
+    adapter = _get_feedback_adapter()
+    return _handle_feedback_call(
+        lambda: adapter.refine(
+            session_id=req.session_id,
+            video_id=req.video_id,
+            frame_id=req.frame_id,
+            feedback_text=req.feedback_text,
+            expected_revision=req.expected_revision,
+            source_candidate_frame_id=req.source_candidate_frame_id,
+        )
+    )
+
+
+@app.post("/feedback/undo")
+def feedback_undo(req: FeedbackUndoApiRequest) -> dict[str, Any]:
+    adapter = _get_feedback_adapter()
+    return _handle_feedback_call(lambda: adapter.undo(req.session_id, req.expected_revision))
+
+
+@app.post("/feedback/reset")
+def feedback_reset(req: FeedbackResetApiRequest) -> dict[str, Any]:
+    adapter = _get_feedback_adapter()
+    return _handle_feedback_call(lambda: adapter.reset(req.session_id, req.expected_revision))
+
+
+@app.get("/feedback/session/{session_id}")
+def feedback_session(session_id: str) -> dict[str, Any]:
+    if not session_id.strip():
+        raise HTTPException(status_code=400, detail="session_id must be non-empty")
+    adapter = _get_feedback_adapter()
+    return _handle_feedback_call(lambda: adapter.get_session(session_id))

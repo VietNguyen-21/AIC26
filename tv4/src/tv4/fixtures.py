@@ -6,7 +6,10 @@ later with zero UI code changes, only an env var flip.
 """
 from __future__ import annotations
 
+from copy import deepcopy
+
 KIS_RESPONSE = {
+    "provenance_mode": "fixture",
     "query_id": "kis-fixture-001",
     "candidates": [
         {
@@ -37,6 +40,7 @@ KIS_RESPONSE = {
 }
 
 VQA_RESPONSE = {
+    "provenance_mode": "fixture",
     "query_id": "qa-fixture-001",
     "results": [
         {
@@ -53,13 +57,199 @@ VQA_RESPONSE = {
     ],
 }
 
+# Fixture VQA is advisory and deliberately non-selectable. Keep the legacy
+# fields above for old consumers while exercising the rich T016 contract.
+VQA_RESPONSE["results"][0].update({
+    "verified": False,
+    "manual_review": True,
+    "proposal": VQA_RESPONSE["results"][0]["answer"],
+    "approved": False,
+    "verifier_status": "fixture_unverified",
+    "retry_count": 0,
+    "manual_required": True,
+    "status": "manual_required",
+    "degraded_reasons": ["fixture_non_authoritative"],
+})
+VQA_RESPONSE["results"][0]["evidence"].update({
+    "query_text": "a person holding a blue cup",
+    "question": "What color is the cup?",
+    "selected_frames": [
+        {"video_id": "L05_V005", "frame_id": 880, "timestamp_ms": 29333, "keyframe_path": "keyframes/L05_V005/0880.jpg", "preprocess_run_id": "fixture-run", "provenance": {"source": "fixture"}, "submission_selectable": False},
+        {"video_id": "L05_V005", "frame_id": 888, "timestamp_ms": 29600, "keyframe_path": "keyframes/L05_V005/0888.jpg", "preprocess_run_id": "fixture-run", "provenance": {"source": "fixture"}, "submission_selectable": False},
+        {"video_id": "L05_V005", "frame_id": 896, "timestamp_ms": 29867, "keyframe_path": "keyframes/L05_V005/0896.jpg", "preprocess_run_id": "fixture-run", "provenance": {"source": "fixture"}, "submission_selectable": False},
+    ],
+    "ocr_evidence": [{"detection_id": "fixture-ocr-888", "video_id": "L05_V005", "frame_id": 888, "timestamp_ms": 29600, "raw_text": "AWARD", "normalized_text": "award", "bbox_xyxy_norm": [0.1, 0.2, 0.6, 0.3], "polygon_norm": None, "confidence": 0.91, "crop_evidence_path": None, "crop_sha256": None, "source_keyframe_sha256": "fixture", "preprocess_run_id": "fixture-run", "model_name": "fixture-ocr", "model_version": "1", "provenance": {"branch": "ocr"}}],
+    "asr_evidence": [{"segment_id": "fixture-asr-1", "video_id": "L05_V005", "start_ms": 29000, "end_ms": 30200, "text": "person holding a blue cup", "normalized_text": "person holding a blue cup", "words": [{"word": "blue", "start_ms": 29900, "end_ms": 30100, "probability": 0.9}], "context": [{"segment_id": "fixture-asr-before", "text": "host speaks"}], "confidence": 0.88, "language": "en", "preprocess_run_id": "fixture-run", "model_name": "fixture-asr", "model_version": "1", "provenance": {"branch": "asr"}}],
+    "object_evidence": [{"detection_id": "fixture-object-888", "video_id": "L05_V005", "frame_id": 888, "timestamp_ms": 29600, "label": "cup", "canonical_label": "cup", "bbox_xyxy_norm": [0.55, 0.4, 0.7, 0.8], "confidence": 0.87, "source_keyframe_path": "keyframes/L05_V005/0888.jpg", "source_keyframe_sha256": "fixture", "preprocess_run_id": "fixture-run", "model_name": "fixture-object", "model_version": "1", "provenance": {"branch": "object"}}],
+    "metadata_evidence": [{"metadata_id": "fixture-meta-1", "video_id": "L05_V005", "source": "fixture", "values": {"title": "award ceremony"}, "window_start_ms": None, "window_end_ms": None, "confidence": None, "preprocess_run_id": "fixture-run", "model_name": None, "model_version": None, "source_record_sha256": "fixture", "provenance": {"branch": "metadata"}}],
+    "availability": {"frames": "available", "ocr": "available", "asr": "available", "object": "available", "metadata": "available"},
+})
+VQA_RESPONSE["results"][0]["evidence"]["provenance"].update({"fixture": True, "submission_selectable": False})
+
+VQA_EMPTY_EVIDENCE_RESPONSE = {
+    "provenance_mode": "fixture", "query_id": "qa-fixture-empty", "results": [{
+        "rank": 1, "video_id": "L05_V005", "frame_id": 888, "timestamp_ms": 29600,
+        "confidence": None, "answer": "", "verified": False, "manual_review": True,
+        "proposal": "", "approved": False, "verifier_status": "insufficient_evidence",
+        "retry_count": 0, "manual_required": True, "status": "abstained",
+        "degraded_reasons": ["empty_evidence"],
+        "evidence": {"query_id": "qa-fixture-empty", "query_text": "fixture empty", "question": "fixture question", "video_id": "L05_V005", "frame_id": 888, "timestamp_ms": 29600, "keyframe_path": None, "selected_frames": [], "ocr_evidence": [], "asr_evidence": [], "object_evidence": [], "metadata_evidence": [], "availability": {"frames": "empty", "ocr": "empty", "asr": "empty", "object": "empty", "metadata": "empty"}, "ocr_texts": [], "asr_texts": [], "object_labels": [], "neighbor_frame_ids": [], "provenance": {"fixture": True, "submission_selectable": False}},
+    }],
+}
+
+VQA_RETRY_EXHAUSTED_RESPONSE = deepcopy(VQA_RESPONSE)
+VQA_RETRY_EXHAUSTED_RESPONSE["query_id"] = "qa-fixture-retry-exhausted"
+VQA_RETRY_EXHAUSTED_RESPONSE["results"][0].update({
+    "retry_count": 1,
+    "verifier_status": "rejected",
+    "manual_required": True,
+    "manual_review": True,
+    "status": "manual_required",
+    "degraded_reasons": ["fixture_retry_exhausted"],
+})
+VQA_RETRY_EXHAUSTED_RESPONSE["results"][0]["evidence"]["query_id"] = "qa-fixture-retry-exhausted"
+
+
+def vqa_fixture_response(query_id: str | None) -> dict:
+    """Deterministic fixture cases; none represents an approved submission."""
+    if query_id == "qa-fixture-empty":
+        return VQA_EMPTY_EVIDENCE_RESPONSE
+    if query_id == "qa-fixture-retry-exhausted":
+        return VQA_RETRY_EXHAUSTED_RESPONSE
+    return VQA_RESPONSE
+
+
 TRAKE_RESPONSE = {
+    "provenance_mode": "fixture",
     "query_id": "trake-fixture-001",
     "result": {
         "video_id": "L10_V010",
         "frame_ids": [101, 156, 203, 251],
+        "timestamps_ms": [4040, 6240, 8120, 10040],
         "event_scores": [0.9, 0.7, 0.85, 0.6],
         "aggregate_score": 3.05,
         "preprocess_run_id": "run_v1_batch1",
+        "candidates": [
+            {
+                "query_id": "trake-fixture-001-ev0",
+                "video_id": "L10_V010",
+                "frame_id": 101,
+                "timestamp_ms": 4040,
+                "source": "fusion",
+                "rank": 1,
+                "score": 0.9,
+                "event_index": 0,
+                "certified_anchor_frame_id": 101,
+                "certified_anchor_timestamp_ms": 4040,
+                "anchor_offset": 0,
+                "preprocess_run_id": "run_v1_batch1",
+            },
+            {
+                "query_id": "trake-fixture-001-ev1",
+                "video_id": "L10_V010",
+                "frame_id": 156,
+                "timestamp_ms": 6240,
+                "source": "fusion",
+                "rank": 1,
+                "score": 0.7,
+                "event_index": 1,
+                "certified_anchor_frame_id": 156,
+                "certified_anchor_timestamp_ms": 6240,
+                "anchor_offset": 0,
+                "preprocess_run_id": "run_v1_batch1",
+            },
+            {
+                "query_id": "trake-fixture-001-ev2",
+                "video_id": "L10_V010",
+                "frame_id": 203,
+                "timestamp_ms": 8120,
+                "source": "fusion",
+                "rank": 1,
+                "score": 0.85,
+                "event_index": 2,
+                "certified_anchor_frame_id": 203,
+                "certified_anchor_timestamp_ms": 8120,
+                "anchor_offset": 0,
+                "preprocess_run_id": "run_v1_batch1",
+            },
+            {
+                "query_id": "trake-fixture-001-ev3",
+                "video_id": "L10_V010",
+                "frame_id": 251,
+                "timestamp_ms": 10040,
+                "source": "fusion",
+                "rank": 1,
+                "score": 0.6,
+                "event_index": 3,
+                "certified_anchor_frame_id": 251,
+                "certified_anchor_timestamp_ms": 10040,
+                "anchor_offset": 0,
+                "preprocess_run_id": "run_v1_batch1",
+            },
+        ],
     },
+}
+
+EXACT_NEIGHBOR_RESPONSE = {
+    "provenance_mode": "fixture",
+    "video_id": "L21_V001",
+    "anchor_frame_id": 10690,
+    "degraded_reason": None,
+    "steps": [
+        {
+            "offset": -1,
+            "degraded_reason": None,
+            "frame": {
+                "video_id": "L21_V001", "frame_id": 10689, "timestamp_ms": 356300,
+                "pts": 10689000, "time_base": "1/30000", "preprocess_run_id": "run_v1_batch1",
+                "media_record_ref": "L21_V001", "mapping_ref": "tv1-frames/L21_V001",
+                "mapping_guaranteed": False, "submission_selectable": False,
+                "identity_source": "fixture", "degraded_reason": "fixture_mode",
+            },
+        },
+        {
+            "offset": 0,
+            "degraded_reason": None,
+            "frame": {
+                "video_id": "L21_V001", "frame_id": 10690, "timestamp_ms": 356333,
+                "pts": 10690000, "time_base": "1/30000", "preprocess_run_id": "run_v1_batch1",
+                "media_record_ref": "L21_V001", "mapping_ref": "tv1-frames/L21_V001",
+                "mapping_guaranteed": False, "submission_selectable": False,
+                "identity_source": "fixture", "degraded_reason": "fixture_mode",
+            },
+        },
+    ],
+}
+
+FEEDBACK_RESPONSE = {
+    "provenance_mode": "fixture",
+    "status": "ok",
+    "session_id": "feedback-fixture-001",
+    "revision": 0,
+    "wp03_run_id": "run_v1_batch1",
+    "expires_at_utc": "2026-08-20T00:00:00Z",
+    "candidates": [
+        {
+            "video_id": "L21_V001",
+            "frame_id": 10690,
+            "rank": 1,
+            "timestamp_ms": 356333,
+            "keyframe_path": "keyframes/L21_V001/83.jpg",
+            "submission_selectable": False,
+            "provenance_mode": "fixture",
+            "source": "feedback",
+            "preprocess_run_id": "run_v1_batch1",
+        },
+        {
+            "video_id": "L21_V002",
+            "frame_id": 23940,
+            "rank": 2,
+            "timestamp_ms": 798000,
+            "keyframe_path": "keyframes/L21_V002/214.jpg",
+            "submission_selectable": False,
+            "provenance_mode": "fixture",
+            "source": "feedback",
+            "preprocess_run_id": "run_v1_batch1",
+        },
+    ],
 }

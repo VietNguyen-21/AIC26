@@ -19,6 +19,7 @@ def test_kis_search_shape():
     resp = client.post("/kis/search", json={"query_text": "một diễn giả mặc áo đỏ"})
     assert resp.status_code == 200
     body = resp.json()
+    assert body["provenance_mode"] == "fixture"
     assert "query_id" in body and "candidates" in body
     first = body["candidates"][0]
     for field in ("video_id", "frame_id", "timestamp_ms", "rank", "score", "provenance_sources"):
@@ -29,15 +30,20 @@ def test_vqa_answer_shape():
     resp = client.post("/vqa/answer", json={"query_text": "video lễ trao giải", "question": "màu ly?"})
     assert resp.status_code == 200
     body = resp.json()
+    assert body["provenance_mode"] == "fixture"
     first = body["results"][0]
-    for field in ("video_id", "frame_id", "answer", "verified", "manual_review", "evidence"):
+    for field in ("video_id", "frame_id", "answer", "verified", "manual_review", "proposal", "approved", "verifier_status", "retry_count", "manual_required", "status", "evidence"):
         assert field in first
+    assert first["approved"] is False
+    assert first["manual_required"] is True
+    assert first["evidence"]["selected_frames"][0]["submission_selectable"] is False
 
 
 def test_trake_align_shape():
     resp = client.post("/trake/align", json={"query_text": "giậm nhảy; bay qua xà; tiếp đất; đứng dậy"})
     assert resp.status_code == 200
     body = resp.json()
+    assert body["provenance_mode"] == "fixture"
     assert body["result"]["video_id"]
     assert len(body["result"]["frame_ids"]) == 4
 

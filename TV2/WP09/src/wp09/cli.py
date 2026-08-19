@@ -20,11 +20,19 @@ def main(argv: list[str] | None = None) -> int:
     refine.add_argument("--config", required=True)
     refine.add_argument("--decoder-factory", help="module:callable returning a canonical mapped decoder")
     refine.add_argument("--scorer-factory", help="optional module:callable returning a FrameScorer")
+    neighbors = sub.add_parser("neighbors")
+    neighbors.add_argument("--request", required=True)
+    neighbors.add_argument("--resolver-factory", required=True, help="module:callable returning an ExactFrameResolver")
     args = parser.parse_args(argv)
-    if args.command != "refine":
-        return 2
     try:
         payload = json.loads(Path(args.request).read_text(encoding="utf-8"))
+        if args.command == "neighbors":
+            request = exact_neighbor_request_from_dict(payload)
+            resolver = _load_factory(args.resolver_factory)(request)
+            result = resolver.resolve(request.candidate, request.video_path, request.context, offsets=request.offsets)
+            from dataclasses import asdict
+            print(json.dumps(asdict(result), ensure_ascii=False, default=str))
+            return 0
         request = request_from_dict(payload)
         config = RefinementConfig.load(Path(args.config))
         if not args.decoder_factory:
@@ -59,4 +67,15 @@ def request_from_dict(data: dict[str, Any]):
         refinement_text=data["refinement_text"], policy=RefinementPolicy(data["policy"]),
         context=RefinementContext(**context), decode_budget=DecodeBudget(**budget),
         evidence=tuple(EvidenceContribution(**entry) for entry in data.get("evidence", [])), event_index=data.get("event_index"),
+    )
+
+
+def exact_neighbor_request_from_dict(data: dict[str, Any]):
+    from .contracts import CoarseCandidate, ExactNeighborRequest, RefinementContext
+
+    return ExactNeighborRequest(
+        candidate=CoarseCandidate(**data["candidate"]),
+        video_path=Path(data["video_path"]),
+        context=RefinementContext(**data["context"]),
+        offsets=tuple(data.get("offsets", (0,))),
     )

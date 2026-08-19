@@ -120,4 +120,6 @@ def to_hypothesis(query_id: str, video_id: str, aligned: list[SearchCandidate], 
         event_scores=tuple(scores),
         aggregate_score=sum(scores),
         preprocess_run_id=preprocess_run_id,
+        timestamps_ms=tuple(c.timestamp_ms for c in aligned),
+        candidates=tuple(aligned),
     )

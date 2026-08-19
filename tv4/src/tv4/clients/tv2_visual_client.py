@@ -50,7 +50,7 @@ class TV2VisualClient:
             cmd += ["--runtime-profile", str(self.runtime_profile)]
         try:
             proc = subprocess.run(
-                cmd, cwd=str(self.wp03_cwd), capture_output=True, text=True, timeout=180,
+                cmd, cwd=str(self.wp03_cwd), capture_output=True, text=True, timeout=600,
             )
         except (OSError, subprocess.TimeoutExpired) as exc:
             raise TV2VisualClientError(f"failed to invoke wp03 search: {exc}") from exc
@@ -64,3 +64,45 @@ class TV2VisualClient:
             raise TV2VisualClientError(f"wp03 search returned non-JSON output: {proc.stdout[:300]}") from exc
         candidates = payload.get("candidates", [])
         return [SearchCandidate.from_json(c) for c in candidates]
+
+    def search_batch(self, requests: list[tuple[str, str, int | None]]) -> list[list[SearchCandidate]]:
+        """Batch visual search: pass list of (query_id, query_text, event_index) and return list of candidate lists."""
+        if not self.enabled or not requests:
+            return [[] for _ in requests]
+        queries_payload = [
+            {
+                "query_id": qid,
+                "query_text": qtext,
+                "event_index": ev_idx,
+                "top_k": self.top_k,
+            }
+            for qid, qtext, ev_idx in requests
+        ]
+        cmd = [
+            self.python_executable, "-m", "wp03", "search-batch",
+            "--artifact-root", str(self.artifact_root),
+            "--queries-json", json.dumps(queries_payload),
+            "--top-k", str(self.top_k),
+            "--candidate-k-per-model", str(self.candidate_k_per_model),
+        ]
+        if self.runtime_root:
+            cmd += ["--runtime-root", str(self.runtime_root)]
+        if self.runtime_profile:
+            cmd += ["--runtime-profile", str(self.runtime_profile)]
+        try:
+            proc = subprocess.run(
+                cmd, cwd=str(self.wp03_cwd), capture_output=True, text=True, timeout=600,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise TV2VisualClientError(f"failed to invoke wp03 search-batch: {exc}") from exc
+        if proc.returncode != 0:
+            return [[] for _ in requests]
+        try:
+            payload = json.loads(proc.stdout)
+        except json.JSONDecodeError as exc:
+            raise TV2VisualClientError(f"wp03 search-batch returned non-JSON output: {proc.stdout[:300]}") from exc
+        results = payload.get("results", [])
+        return [
+            [SearchCandidate.from_json(c) for c in item.get("candidates", [])]
+            for item in results
+        ]

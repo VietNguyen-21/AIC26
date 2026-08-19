@@ -164,6 +164,24 @@ class RefineRequest:
 
 
 @dataclass(frozen=True)
+class ExactNeighborRequest:
+    """Bounded request to inspect original consecutive frames from one anchor."""
+
+    candidate: CoarseCandidate
+    video_path: Path
+    context: RefinementContext
+    offsets: tuple[int, ...] = (0,)
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.video_path, Path) or not str(self.video_path):
+            raise ContractError("video_path must be a path")
+        if not isinstance(self.context, RefinementContext):
+            raise ContractError("context is required")
+        if not self.offsets or any(isinstance(offset, bool) or not isinstance(offset, int) for offset in self.offsets):
+            raise ContractError("offsets must be non-empty integer values")
+
+
+@dataclass(frozen=True)
 class ExactFrameHypothesis:
     video_id: str
     frame_id: int

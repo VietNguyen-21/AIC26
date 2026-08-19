@@ -1,0 +1,15 @@
+{
+  "schema_version": "e4-1c-run-certification-v1",
+  "certification_id": "e4-1b-run_v1_batch1-decoder-semantics",
+  "preprocess_run_id": "run_v1_batch1",
+  "decision": "CERTIFIED",
+  "identity_semantics": "zero_based_global_original_decode_ordinal",
+  "certification_report_sha256": "fdea3ad38a173b6d953399fee31857b6737c07b09159f46ffca82e5fd03f74eb",
+  "certification_script_sha256": "e59397315a636be46c03c802ec02a2ddb541522439c8b660964fcad176fc6398",
+  "python_version": "3.12.10 x64",
+  "pyav_version": "18.1.0",
+  "decoder_fingerprint_sha256": "e4e70baf28be83fdddf261d11120b6457053b0f60cc6a7d0e61b798ed71b1bac",
+  "sample_video_ids": ["L24_V045", "L30_V040", "L26_V313", "L25_V009"],
+  "validation_summary": {"representative_video_count": 4, "authoritative_anchor_count": 12},
+  "limitations": ["VFR_NOT_LIVE_SAMPLED"]
+}

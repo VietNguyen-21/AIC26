@@ -14,12 +14,12 @@ import yaml
 
 from .artifacts import sha256_file
 from .config import RuntimeProfile, load_build_config
-from .contracts import ContractError
+from .contracts import ContractError, SearchRequest
 from .corpus import load_corpus
 from .digests import ContentValidationMode
 from .model_lock import create_model_lock
 from .orchestrator import BuildRequest, build_all_models
-from .search import SearchEncoder, search_visual
+from .search import SearchEncoder, search_visual, search_visual_batch
 from .worker_launcher import WorkerProcessEncoder
 from .worker_protocol import compatibility_fingerprint
 from .workers.beit3 import Adapter as Beit3Adapter
@@ -170,6 +170,78 @@ def _search(args: argparse.Namespace, services: CliServices) -> dict[str, object
     return response.to_dict()
 
 
+def _search_batch(args: argparse.Namespace, services: CliServices) -> dict[str, object]:
+    if args.queries_json == "-":
+        raw_queries = json.loads(sys.stdin.read())
+    else:
+        raw_queries = json.loads(args.queries_json)
+    if not isinstance(raw_queries, list) or not raw_queries:
+        raise ContractError("queries-json must be a non-empty list of query objects")
+    requests: list[SearchRequest] = []
+    for item in raw_queries:
+        q_text = str(item.get("query_text", "")).strip()
+        if not q_text:
+            raise ContractError("each query must have non-empty query_text")
+        q_top_k = int(item.get("top_k", args.top_k))
+        if q_top_k <= 0:
+            raise ContractError("top_k must be positive")
+        requests.append(
+            SearchRequest(
+                query_id=str(item.get("query_id", "wp03-query")),
+                task="KIS",
+                query_text=q_text,
+                question=None,
+                events=(),
+                filters={},
+                limit=q_top_k,
+                language=None,
+                session_id=None,
+                event_index=item.get("event_index"),
+            )
+        )
+    encoders: Mapping[str, SearchEncoder] = services.encoders
+    completed_manifests = sorted((Path(args.artifact_root) / "manifests").glob("*.json"))
+    policy = next(
+        (
+            json.loads(path.read_text(encoding="utf-8"))
+            for path in completed_manifests
+            if json.loads(path.read_text(encoding="utf-8")).get("status") == "complete"
+        ),
+        {},
+    )
+    rrf_k = args.rrf_k if args.rrf_k is not None else int(policy.get("rrf_k", 60))
+    dedup_window_ms = args.dedup_window_ms if args.dedup_window_ms is not None else policy.get("dedup_window_ms", 1_000)
+    if not encoders:
+        if not args.runtime_root or not args.runtime_profile:
+            raise ContractError("search requires runtime root/profile unless test encoders are injected")
+        profile = RuntimeProfile.load(Path(args.runtime_profile), Path(args.runtime_root))
+        encoders = {}
+        for manifest_path in sorted((Path(args.artifact_root) / "manifests").glob("*.json")):
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            model_key = str(manifest.get("model_key", ""))
+            if manifest.get("status") == "complete" and model_key:
+                encoders[model_key] = WorkerProcessEncoder(
+                    command=profile.command_for(model_key),
+                    job_root=Path(args.artifact_root) / "jobs" / model_key,
+                    model_key=model_key, revision=str(manifest.get("model_version", "")),
+                    device="cuda", dtype="float16", batch_size=len(requests),
+                    _compatibility_fingerprint=str(manifest.get("compatibility_fingerprint", "")),
+                    environment=profile.environment_for(model_key),
+                )
+        if not encoders:
+            raise ContractError("no complete model manifest is available")
+    responses = search_visual_batch(
+        requests,
+        artifact_root=Path(args.artifact_root),
+        encoders=dict(encoders),
+        candidate_k_per_model=args.candidate_k_per_model,
+        hard_candidate_cap=args.hard_candidate_cap,
+        rrf_k=rrf_k,
+        dedup_window_ms=dedup_window_ms,
+    )
+    return {"results": [resp.to_dict() for resp in responses]}
+
+
 def _inspect(args: argparse.Namespace) -> dict[str, object]:
     root = Path(args.artifact_root)
     manifests = sorted((root / "manifests").glob("*.json"))
@@ -227,6 +299,16 @@ def _parser() -> argparse.ArgumentParser:
     search.add_argument("--dedup-window-ms", type=int)
     search.add_argument("--runtime-root")
     search.add_argument("--runtime-profile")
+    search_batch = commands.add_parser("search-batch")
+    search_batch.add_argument("--artifact-root", required=True)
+    search_batch.add_argument("--queries-json", required=True)
+    search_batch.add_argument("--top-k", type=int, default=100)
+    search_batch.add_argument("--candidate-k-per-model", type=int, default=200)
+    search_batch.add_argument("--hard-candidate-cap", type=int)
+    search_batch.add_argument("--rrf-k", type=int)
+    search_batch.add_argument("--dedup-window-ms", type=int)
+    search_batch.add_argument("--runtime-root")
+    search_batch.add_argument("--runtime-profile")
     inspect = commands.add_parser("inspect")
     inspect.add_argument("--artifact-root", required=True)
     lock = commands.add_parser("lock-model")
@@ -246,6 +328,8 @@ def main(argv: Sequence[str] | None = None, services: CliServices | None = None)
             result = _build(args, selected)
         elif args.command == "search":
             result = _search(args, selected)
+        elif args.command == "search-batch":
+            result = _search_batch(args, selected)
         elif args.command == "inspect":
             result = _inspect(args)
         else:
@@ -257,3 +341,7 @@ def main(argv: Sequence[str] | None = None, services: CliServices | None = None)
     except (ContractError, OSError, ValueError) as exc:
         print(json.dumps({"status": "error", "error": str(exc)}), file=sys.stderr)
         return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())
