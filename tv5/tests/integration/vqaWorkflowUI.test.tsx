@@ -292,7 +292,7 @@ describe('T031 — VQA Workflow & Operator UI Integration Tests', () => {
     const addBasketBtn = screen.getByTestId('btn-add-vqa-basket')
     await user.click(addBasketBtn)
 
-    expect(addBasketBtn).toHaveTextContent('Added to Basket ✓')
+    expect(addBasketBtn).toHaveTextContent('Added to Basket')
 
     // 9. Navigate to Evidence / Submission Tab and verify basket contents
     const evidenceTab = screen.getByTestId('tab-evidence')

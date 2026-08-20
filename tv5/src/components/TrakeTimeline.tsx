@@ -19,6 +19,7 @@ interface TrakeTimelineProps {
   validationStatus: 'valid' | 'incomplete' | 'mixed_video' | 'empty'
   isSearching: boolean
   mode: string
+  isInBasket?: boolean
   onSelectSlot: (index: number) => void
   onInspectSlot: (index: number) => void
   onLockSlot: (index: number) => void
@@ -34,6 +35,7 @@ export const TrakeTimeline: React.FC<TrakeTimelineProps> = ({
   validationStatus,
   isSearching,
   mode,
+  isInBasket,
   onSelectSlot,
   onInspectSlot,
   onLockSlot,
@@ -137,14 +139,23 @@ export const TrakeTimeline: React.FC<TrakeTimelineProps> = ({
 
           <button
             type="button"
-            className="trake-btn-add-basket"
+            className={`trake-btn-add-basket ${isInBasket ? 'is-in-basket-active' : ''}`}
             onClick={onAddToBasket}
-            disabled={!canAddToBasket}
-            title={getBasketButtonTitle()}
+            disabled={!canAddToBasket && !isInBasket}
+            title={isInBasket ? 'Sequence already added to Submission Basket' : getBasketButtonTitle()}
             data-testid="trake-add-basket-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: isInBasket ? 'rgba(16, 185, 129, 0.22)' : undefined,
+              borderColor: isInBasket ? '#10b981' : undefined,
+              color: isInBasket ? '#10b981' : undefined,
+              transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
           >
-            <BasketIcon size={14} />
-            <span>Add Sequence to Basket</span>
+            {isInBasket ? <CheckIcon size={14} color="#10b981" /> : <BasketIcon size={14} />}
+            <span>{isInBasket ? 'Sequence in Basket' : 'Add Sequence to Basket'}</span>
           </button>
         </div>
       </div>

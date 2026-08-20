@@ -10,7 +10,10 @@ import {
   CheckIcon,
   QuestionIcon,
   FilmstripIcon,
+  ExportIcon,
 } from './Icons'
+import { exportBasketToCsvString, triggerBrowserDownload } from '../utils/submissionExporter'
+import { telemetry } from '../utils/telemetry'
 
 export const EvidenceSubmissionWorkspace: React.FC = () => {
   const {
@@ -29,10 +32,45 @@ export const EvidenceSubmissionWorkspace: React.FC = () => {
   const dispatch = useAppDispatch()
   const isFixture = mode === 'fixture'
 
+  const kisItems = submissionBasket.filter((b) => (b.task || 'KIS') === 'KIS')
+  const vqaItems = submissionBasket.filter((b) => b.task === 'VQA')
+  const trakeItems = submissionBasket.filter((b) => b.task === 'TRAKE')
+
+  const currentTaskItems =
+    taskMode === 'KIS' ? kisItems : taskMode === 'VQA' ? vqaItems : trakeItems
+  const currentTaskLabel = taskMode === 'VQA' ? 'Q&A' : taskMode
+
   const handleRemoveFromBasket = (videoId: string, frameId: number) => {
     dispatch({
       type: 'REMOVE_FROM_BASKET',
       payload: { video_id: videoId, frame_id: frameId },
+    })
+    telemetry.record({
+      action: 'REMOVE_FROM_BASKET',
+      taskMode,
+      videoId,
+      frameId,
+    })
+  }
+
+  const handleExportTaskCsv = (task: 'KIS' | 'VQA' | 'TRAKE') => {
+    const items = submissionBasket.filter((b) => (b.task || 'KIS') === task)
+    if (items.length === 0) return
+    const csvContent = exportBasketToCsvString(submissionBasket, task)
+    const filename = `submission_${task.toLowerCase()}_${new Date().toISOString().slice(0, 10)}.csv`
+    triggerBrowserDownload(csvContent, filename)
+    telemetry.record({
+      action: 'EXPORT_SUBMISSION_CSV',
+      taskMode: task,
+      details: { rowCount: items.length, filename },
+    })
+  }
+
+  const handleClearBasket = () => {
+    dispatch({ type: 'CLEAR_BASKET' })
+    telemetry.record({
+      action: 'CLEAR_BASKET',
+      taskMode,
     })
   }
 
@@ -249,8 +287,128 @@ export const EvidenceSubmissionWorkspace: React.FC = () => {
                 <div className="basket-summary-status">
                   <CheckIcon size={14} className="text-cyan" />
                   <span className="summary-text tabular-nums">
-                    {submissionBasket.length} valid row{submissionBasket.length > 1 ? 's' : ''} ready for CSV packaging
+                    {submissionBasket.length} total prediction{submissionBasket.length > 1 ? 's' : ''} in basket ({kisItems.length} KIS, {vqaItems.length} Q&A, {trakeItems.length} TRAKE)
                   </span>
+                </div>
+                <div className="basket-export-actions" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
+                  {/* Primary Export Button for Active Task Mode */}
+                  <button
+                    type="button"
+                    className="btn-export-csv"
+                    onClick={() => handleExportTaskCsv(taskMode)}
+                    disabled={currentTaskItems.length === 0}
+                    data-testid="btn-export-csv"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '7px 14px',
+                      background: currentTaskItems.length > 0 ? 'var(--color-cyan, #00e5ff)' : 'rgba(255, 255, 255, 0.08)',
+                      color: currentTaskItems.length > 0 ? '#0a0e17' : '#64748b',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontWeight: 600,
+                      cursor: currentTaskItems.length > 0 ? 'pointer' : 'not-allowed',
+                      fontSize: '12px',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <ExportIcon size={14} color={currentTaskItems.length > 0 ? '#0a0e17' : '#64748b'} />
+                    <span>Export {currentTaskLabel} CSV ({currentTaskItems.length})</span>
+                  </button>
+
+                  {/* Secondary Export Buttons for other tasks present in basket */}
+                  {taskMode !== 'KIS' && kisItems.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleExportTaskCsv('KIS')}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        padding: '6px 10px',
+                        background: 'rgba(0, 229, 255, 0.1)',
+                        color: '#00e5ff',
+                        border: '1px solid rgba(0, 229, 255, 0.3)',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '11.5px',
+                        fontWeight: 500,
+                      }}
+                    >
+                      <ExportIcon size={13} color="#00e5ff" />
+                      <span>Export KIS ({kisItems.length})</span>
+                    </button>
+                  )}
+
+                  {taskMode !== 'VQA' && vqaItems.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleExportTaskCsv('VQA')}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        padding: '6px 10px',
+                        background: 'rgba(0, 229, 255, 0.1)',
+                        color: '#00e5ff',
+                        border: '1px solid rgba(0, 229, 255, 0.3)',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '11.5px',
+                        fontWeight: 500,
+                      }}
+                    >
+                      <ExportIcon size={13} color="#00e5ff" />
+                      <span>Export Q&A ({vqaItems.length})</span>
+                    </button>
+                  )}
+
+                  {taskMode !== 'TRAKE' && trakeItems.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleExportTaskCsv('TRAKE')}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        padding: '6px 10px',
+                        background: 'rgba(0, 229, 255, 0.1)',
+                        color: '#00e5ff',
+                        border: '1px solid rgba(0, 229, 255, 0.3)',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '11.5px',
+                        fontWeight: 500,
+                      }}
+                    >
+                      <ExportIcon size={13} color="#00e5ff" />
+                      <span>Export TRAKE ({trakeItems.length})</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    className="btn-clear-basket"
+                    onClick={handleClearBasket}
+                    data-testid="btn-clear-basket"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '6px 10px',
+                      background: 'rgba(255, 75, 75, 0.12)',
+                      color: '#ff4b4b',
+                      border: '1px solid rgba(255, 75, 75, 0.3)',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '11.5px',
+                      marginLeft: 'auto',
+                    }}
+                  >
+                    <ClearIcon size={12} color="#ff4b4b" />
+                    <span>Clear All</span>
+                  </button>
                 </div>
               </div>
             )}

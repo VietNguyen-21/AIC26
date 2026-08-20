@@ -17,9 +17,11 @@ import {
   ArrowLeftIcon,
   QuestionIcon,
   FilmstripIcon,
+  BasketIcon,
 } from './Icons'
 import { EvidenceInspector } from './EvidenceInspector'
 import { VqaAnswerPanel } from './VqaAnswerPanel'
+import { telemetry } from '../utils/telemetry'
 
 export const InspectionWorkspace: React.FC = () => {
   const {
@@ -45,6 +47,7 @@ export const InspectionWorkspace: React.FC = () => {
     trakeSlots,
     trakeActiveSlotIndex,
     trakeVideoId,
+    submissionBasket,
   } = useAppState()
 
   const dispatch = useAppDispatch()
@@ -700,6 +703,53 @@ export const InspectionWorkspace: React.FC = () => {
                   <span>Use This Frame</span>
                 </button>
               )}
+
+              {/* Add to Submission Basket Button for KIS */}
+              {taskMode === 'KIS' && (() => {
+                const finalFid = inspectedFrameId ?? targetCandidate.frame_id
+                const isInBasket = submissionBasket.some(
+                  (b) => b.video_id === targetCandidate.video_id && b.frame_id === finalFid && b.task === 'KIS'
+                )
+                return (
+                  <button
+                    type="button"
+                    className="btn-use-for-event"
+                    onClick={() => {
+                      const finalTime = inspectedTimestampMs ?? targetCandidate.timestamp_ms
+                      dispatch({
+                        type: 'ADD_KIS_TO_BASKET',
+                        payload: {
+                          candidate: {
+                            ...targetCandidate,
+                            frame_id: finalFid,
+                            timestamp_ms: finalTime,
+                          },
+                        },
+                      })
+                      telemetry.record({
+                        action: 'ADD_KIS_TO_BASKET_FROM_INSPECTION',
+                        taskMode: 'KIS',
+                        videoId: targetCandidate.video_id,
+                        frameId: finalFid,
+                      })
+                    }}
+                    title={isInBasket ? `In Submission Basket (${targetCandidate.video_id} Frame ${finalFid})` : `Add ${targetCandidate.video_id} Frame ${finalFid} to Submission Basket`}
+                    data-testid="inspection-add-to-basket-btn"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      background: isInBasket ? 'rgba(16, 185, 129, 0.22)' : 'rgba(0, 229, 255, 0.15)',
+                      borderColor: isInBasket ? '#10b981' : 'var(--color-cyan, #00e5ff)',
+                      color: isInBasket ? '#10b981' : 'var(--color-cyan, #00e5ff)',
+                      transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                    }}
+                  >
+                    {isInBasket ? <CheckIcon size={13} color="#10b981" /> : <BasketIcon size={13} />}
+                    <span>{isInBasket ? 'In Basket' : '+ Basket'}</span>
+                  </button>
+                )
+              })()}
 
               {/* Exact Canonical Commit Button for Q&A / VQA */}
               {taskMode === 'VQA' && inspectedFrameId !== undefined && inspectedFrameId !== targetCandidate.frame_id && (

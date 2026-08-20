@@ -9,13 +9,14 @@ import {
   TV4HealthResponse,
 } from '../types/contracts'
 
-export type WorkspaceTab = 'retrieval' | 'inspection' | 'evidence'
+export type WorkspaceTab = 'retrieval' | 'inspection' | 'evidence' | 'evaluation'
 export type TaskMode = 'KIS' | 'VQA' | 'TRAKE'
 
 export interface AppState {
   // Navigation
   activeTab: WorkspaceTab
   taskMode: TaskMode
+  isKeyboardHelpOpen: boolean
 
   // System / Health / Readiness
   mode: SystemMode
@@ -90,6 +91,7 @@ export interface AppState {
 export const initialAppState: AppState = {
   activeTab: 'retrieval',
   taskMode: 'KIS',
+  isKeyboardHelpOpen: false,
 
   mode: 'live',
   readiness: 'OFFLINE',

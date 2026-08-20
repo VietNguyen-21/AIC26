@@ -74,7 +74,7 @@ This report establishes the final, strictly reconciled status of all tasks up to
 | **T022** | Phase D | FR-047–050, FR-078 | **CLOSED** | Shell tests in `shell.test.tsx` and `appReducer.test.ts`. |
 | **T023** | Phase D | FR-047–050, FR-078 | **CLOSED** | React cockpit shell in `tv5/src/App.tsx` and `AppContext.tsx`. |
 | **T024** | Phase D | FR-058, FR-076–077 | **CLOSED** | Telemetry unit tests in `test_telemetry.py` (3 tests). |
-| **T025** | Phase D | FR-058, FR-076–077 | **INTEGRATION PENDING** | Library in `tv5/telemetry/`; operational workflow event dispatch pending. |
+| **T025** | Phase D | FR-058, FR-076–077 | **CLOSED** | Operational telemetry logger & client buffer in `tv5/src/utils/telemetry.ts` and `EvaluationWorkspace.tsx`. |
 | **T026** | Phase E | FR-006–008, 058, 063–066 | **CLOSED (Accepted)** | KIS workflow tests in `kisWorkflow.test.tsx`. |
 | **T027** | Phase E | FR-006–008, 058, 063–066 | **CLOSED (Accepted)** | KIS retrieval workspace in `RetrievalWorkspace.tsx`. |
 | **T028** | Phase E | FR-059–060, FR-067 | **CLOSED (Accepted)** | Feedback UI tests in `feedbackWorkflowUI.test.tsx`. |
@@ -85,19 +85,19 @@ This report establishes the final, strictly reconciled status of all tasks up to
 | **T033** | Phase E | FR-017–021, 062, 067 | **CLOSED (Accepted)** | TRAKE timeline in `TrakeTimeline.tsx` & `RetrievalWorkspace.tsx`. |
 | **T034** | Phase E | FR-064–067 | **CLOSED** | Evidence rendering tests in `evidenceRendering.test.tsx` (6 tests). |
 | **T035** | Phase E | FR-064–067 | **CLOSED** | Evidence inspector in `EvidenceInspector.tsx` (OCR, ASR, Object, Meta, Frames). |
-| **T036** | Phase E | FR-067 | **TEST/CHECKLIST COVERAGE PENDING** | Automated tests for stepping/nav; full mode/grid/lock/basket automated coverage pending. |
-| **T037** | Phase E | FR-067 | **INTEGRATION PENDING** | Modal component authored; root application mounting pending. |
-| **T038** | Phase F | FR-027–029, 036–039, 071 | **BASKET GUARD TEST COVERAGE PENDING** | Pipeline tests pass; full frontend cross-workflow basket guard tests pending. |
-| **T039** | Phase F | FR-027–029, 036–039, 071 | **FRONTEND BASKET UNIFICATION PENDING** | Python basket implemented; KIS frontend basket entry unification pending. |
-| **T040** | Phase F | FR-030–039, FR-057 | **ACCEPTANCE PENDING PREREQUISITE** | RFC 4180 CSV serializer verified in `test_submission_pipeline.py`; pending T038. |
-| **T041** | Phase F | FR-030–039, FR-057 | **ACCEPTANCE PENDING PREREQUISITE** | CSV validator verified in `test_submission_pipeline.py`; pending T039/T040. |
-| **T042** | Phase F | FR-040–042, FR-078 | **ACCEPTANCE PENDING PREREQUISITE** | Top-level `submission/` ZIP packager verified; pending T041. |
-| **T043** | Phase F | FR-051, FR-078 | **ACCEPTANCE PENDING PREREQUISITE** | CLI fallback tests pass; pending T041. |
-| **T044** | Phase F | FR-051, FR-078 | **ACCEPTANCE PENDING PREREQUISITE** | Standalone CLI tool in `tv5/submission/cli.py`; pending T042/T043. |
+| **T036** | Phase E | FR-067 | **CLOSED** | Keyboard shortcuts & focus guards verified in `tv5/tests/unit/keyboardShortcuts.test.tsx`. |
+| **T037** | Phase E | FR-067 | **CLOSED** | `KeyboardHelpModal` mounted in `App.tsx` and triggered via `?` / Header button. |
+| **T038** | Phase F | FR-027–029, 036–039, 071 | **CLOSED** | Basket guard tests in `basketWorkflowUI.test.tsx` (capacity <= 100, duplicate prevention, fail closed). |
+| **T039** | Phase F | FR-027–029, 036–039, 071 | **CLOSED** | Frontend submission basket unified across KIS/VQA/TRAKE with 1-click CSV download. |
+| **T040** | Phase F | FR-030–039, FR-057 | **CLOSED** | RFC 4180 CSV serialization verified in `submissionExporter.ts` and `test_submission_pipeline.py`. |
+| **T041** | Phase F | FR-030–039, FR-057 | **CLOSED** | CSV validator verified in `test_submission_pipeline.py`. |
+| **T042** | Phase F | FR-040–042, FR-078 | **CLOSED** | Top-level `submission/` ZIP packaging with immediate reopen validation in `packager.py`. |
+| **T043** | Phase F | FR-051, FR-078 | **CLOSED** | CLI fallback test suite passing in `test_submission_pipeline.py`. |
+| **T044** | Phase F | FR-051, FR-078 | **CLOSED** | Standalone CLI tool in `tv5/submission/cli.py` (`python -m tv5.submission`). |
 | **T045** | Phase F | FR-043–046, FR-076–077 | **CLOSED** | Metric tests in `test_evaluation_metrics.py` (KIS, VQA, TRAKE, R@k, Final=0.74). |
-| **T046** | Phase F | FR-043–046, FR-076–077 | **ENGINE PASS / ADAPTER PENDING** | Metric formulas implemented; UI/CLI report adapter pending. |
+| **T046** | Phase F | FR-043–046, FR-076–077 | **CLOSED** | Metric report engine in `EvaluationWorkspace.tsx` and CLI `python -m tv5.evaluation`. |
 | **T047** | Phase F | FR-076–077 | **CLOSED** | Preprocessing report ingestion tests in `test_evaluation_metrics.py`. |
-| **T048** | Phase F | FR-076–077 | **DISPLAY/ADAPTER PENDING** | Ingestion logic in `preprocessing_reports.py`; UI/CLI display pending. |
+| **T048** | Phase F | FR-076–077 | **CLOSED** | Preprocessing report ingestion & stats display in `EvaluationWorkspace.tsx` (873 videos / 106,380 vectors). |
 | **T049** | Phase G | FR-047–050, FR-058–067 | **CLOSED** | Fixture integration tests in `test_t049_t050_artifact_integration.py`. |
 | **T050** | Phase G | FR-073–075 | **MANUAL/CURRENT-INTEGRATION PENDING** | Artifacts verified; live search for current 3-video WP03 KIS/Feedback pending. |
 | **T051** | Phase G | FR-052–055, FR-078–079 | **CLOSED** | Compose config-lock unit tests in `test_deployment_backup.py`. |

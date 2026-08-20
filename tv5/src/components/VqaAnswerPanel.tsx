@@ -8,6 +8,7 @@ import {
   ClearIcon,
   QuestionIcon,
 } from './Icons'
+import { telemetry } from '../utils/telemetry'
 
 export const VqaAnswerPanel: React.FC = () => {
   const {
@@ -75,8 +76,17 @@ export const VqaAnswerPanel: React.FC = () => {
   }
 
   const handleAddToBasket = () => {
-    if (isApproved && !isFixture) {
+    if (isApproved && !isFixture && vqaActiveResult) {
       dispatch({ type: 'ADD_VQA_TO_BASKET' })
+      telemetry.record({
+        action: 'ADD_VQA_TO_BASKET',
+        taskMode: 'VQA',
+        videoId: vqaActiveResult.video_id,
+        frameId: vqaActiveResult.frame_id,
+        details: {
+          answer: vqaApprovedAnswer,
+        },
+      })
     }
   }
 
@@ -243,10 +253,19 @@ export const VqaAnswerPanel: React.FC = () => {
                 onClick={handleAddToBasket}
                 disabled={isAlreadyInBasket}
                 data-testid="btn-add-vqa-basket"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: isAlreadyInBasket ? 'rgba(16, 185, 129, 0.22)' : undefined,
+                  borderColor: isAlreadyInBasket ? '#10b981' : undefined,
+                  color: isAlreadyInBasket ? '#10b981' : undefined,
+                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                }}
               >
-                <BasketIcon size={14} />
+                {isAlreadyInBasket ? <CheckIcon size={14} color="#10b981" /> : <BasketIcon size={14} />}
                 <span>
-                  {isAlreadyInBasket ? 'Added to Basket ✓' : 'Add to Submission Basket'}
+                  {isAlreadyInBasket ? 'Added to Basket' : 'Add to Submission Basket'}
                 </span>
               </button>
             ) : (

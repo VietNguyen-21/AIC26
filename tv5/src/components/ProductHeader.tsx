@@ -6,6 +6,7 @@ import {
   RetrievalTabIcon,
   InspectionTabIcon,
   EvidenceTabIcon,
+  CheckIcon,
 } from './Icons'
 
 export const ProductHeader: React.FC = () => {
@@ -80,11 +81,41 @@ export const ProductHeader: React.FC = () => {
             <EvidenceTabIcon size={16} />
             <span>Evidence / Submission</span>
           </button>
+
+          <button
+            type="button"
+            className={`nav-tab-btn ${activeTab === 'evaluation' ? 'tab-active' : ''}`}
+            onClick={() => handleTabChange('evaluation')}
+            data-testid="tab-evaluation"
+          >
+            <CheckIcon size={16} />
+            <span>Evaluation / Stats</span>
+          </button>
         </nav>
       </div>
 
       {/* Right: Operational Status & Candidate Count */}
       <div className="header-status-pane">
+        <button
+          type="button"
+          className="btn-keyboard-help-trigger"
+          onClick={() => dispatch({ type: 'TOGGLE_KEYBOARD_HELP' })}
+          title="Keyboard Shortcuts (?)"
+          aria-label="Open keyboard shortcuts help modal"
+          data-testid="btn-keyboard-help"
+          style={{
+            padding: '4px 8px',
+            background: 'rgba(0, 229, 255, 0.1)',
+            border: '1px solid rgba(0, 229, 255, 0.3)',
+            borderRadius: '4px',
+            color: 'var(--color-cyan, #00e5ff)',
+            fontWeight: 'bold',
+            fontSize: '13px',
+            cursor: 'pointer',
+          }}
+        >
+          ?
+        </button>
         {/* Subtle Operational Status */}
         {isFixture ? (
           <span className="status-pill pill-fixture">

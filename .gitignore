@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Python & Testing Caches
+__pycache__/
+*.pyc
+.pytest_cache/
+.pytest_tmp/
+.pytest_tmp_tv4/
+.coverage
+coverage/
+.vitest/
+
+# Vite & Tooling
+.vite/
+.turbo/
+.eslintcache
+*.log
+
+# IDE & Local Agent Scratch
+.agents/
+.specify/
+skills-lock.json
+.DS_Store
+Thumbs.db
+.env.local
+.env.*.local
+*.local

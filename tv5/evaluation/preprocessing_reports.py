@@ -58,30 +58,47 @@ def ingest_preprocessing_run_report(run_dir: Path, expected_run_id: str | None =
             errors=(f"Failed to read/parse manifest: {exc}",),
         )
 
-    run_id = data.get("preprocess_run_id", data.get("run_id", expected_run_id or run_dir.name))
-    if expected_run_id and run_id != expected_run_id:
+    if isinstance(data, list):
+        video_count = len(data)
+        run_id = expected_run_id or run_dir.name
+        keyframe_count = sum(len(item.get("keyframes", [])) if isinstance(item, dict) else 0 for item in data)
+        thumbnail_count = keyframe_count
+        storage_bytes = 0
+        throughput_fps = None
+        provenance = {"manifest_type": "list", "video_count": video_count}
+    elif isinstance(data, dict):
+        run_id = data.get("preprocess_run_id", data.get("run_id", expected_run_id or run_dir.name))
+        if expected_run_id and run_id != expected_run_id:
+            return PreprocessingReport(
+                run_id=run_id,
+                is_valid=False,
+                status="INCOMPATIBLE",
+                errors=(f"Run ID mismatch: expected {expected_run_id}, got {run_id}",),
+            )
+
+        videos = data.get("videos", data.get("video_list", []))
+        video_count = len(videos) if isinstance(videos, list) else int(data.get("unique_video_count", 0))
+
+        # Read frames / keyframes / thumbnails metadata
+        keyframe_count = int(data.get("keyframe_count", data.get("keyframes", 0)))
+        thumbnail_count = int(data.get("thumbnail_count", data.get("thumbnails", 0)))
+
+        # Estimate or read storage metrics
+        storage_bytes = int(data.get("storage_bytes", data.get("total_bytes", 0)))
+        throughput_fps = data.get("throughput_fps")
+        if throughput_fps is not None:
+            try:
+                throughput_fps = float(throughput_fps)
+            except (ValueError, TypeError):
+                throughput_fps = None
+        provenance = data.get("provenance", {})
+    else:
         return PreprocessingReport(
-            run_id=run_id,
+            run_id=expected_run_id or run_dir.name,
             is_valid=False,
             status="INCOMPATIBLE",
-            errors=(f"Run ID mismatch: expected {expected_run_id}, got {run_id}",),
+            errors=("Manifest JSON is neither a list nor a dictionary",),
         )
-
-    videos = data.get("videos", data.get("video_list", []))
-    video_count = len(videos) if isinstance(videos, list) else int(data.get("unique_video_count", 0))
-
-    # Read frames / keyframes / thumbnails metadata
-    keyframe_count = int(data.get("keyframe_count", data.get("keyframes", 0)))
-    thumbnail_count = int(data.get("thumbnail_count", data.get("thumbnails", 0)))
-
-    # Estimate or read storage metrics
-    storage_bytes = int(data.get("storage_bytes", data.get("total_bytes", 0)))
-    throughput_fps = data.get("throughput_fps")
-    if throughput_fps is not None:
-        try:
-            throughput_fps = float(throughput_fps)
-        except (ValueError, TypeError):
-            throughput_fps = None
 
     return PreprocessingReport(
         run_id=run_id,
@@ -92,9 +109,5 @@ def ingest_preprocessing_run_report(run_dir: Path, expected_run_id: str | None =
         thumbnail_count=thumbnail_count,
         storage_bytes=storage_bytes,
         throughput_fps=throughput_fps,
-        provenance={
-            "manifest_path": str(manifest_path),
-            "preprocess_run_id": run_id,
-            "created_at_utc": data.get("created_at_utc"),
-        },
+        provenance=provenance,
     )

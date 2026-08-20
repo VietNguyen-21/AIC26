@@ -51,7 +51,11 @@ export type AppAction =
   | { type: 'FEEDBACK_CLEAR' }
   // Basket Actions
   | { type: 'ADD_TO_BASKET'; payload: BasketItem }
+  | { type: 'ADD_KIS_TO_BASKET'; payload?: { candidate?: SearchCandidate } }
+  | { type: 'CLEAR_BASKET' }
   | { type: 'REMOVE_FROM_BASKET'; payload: { video_id: string; frame_id: number } }
+  | { type: 'TOGGLE_KEYBOARD_HELP' }
+  | { type: 'SET_KEYBOARD_HELP'; payload: boolean }
   // VQA Actions (WP11 / T016 / T030 / T031)
   | { type: 'SET_VQA_QUESTION'; payload: string }
   | { type: 'VQA_SEARCH_START' }
@@ -583,9 +587,42 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         (b) => b.video_id === action.payload.video_id && b.frame_id === action.payload.frame_id
       )
       if (exists) return state
+      if (state.submissionBasket.length >= 100) return state
       return {
         ...state,
         submissionBasket: [...state.submissionBasket, action.payload],
+      }
+    }
+
+    case 'ADD_KIS_TO_BASKET': {
+      const cand = action.payload?.candidate || state.activeCandidate || state.kisActiveCandidate
+      if (!cand || !cand.video_id || cand.frame_id === undefined || cand.frame_id === null || cand.frame_id < 0) {
+        return state
+      }
+      if (state.submissionBasket.length >= 100) {
+        return state
+      }
+      const item: BasketItem = {
+        video_id: cand.video_id,
+        frame_id: cand.frame_id,
+        timestamp_ms: cand.timestamp_ms || 0,
+        added_at_utc: new Date().toISOString(),
+        task: 'KIS',
+      }
+      const exists = state.submissionBasket.some(
+        (b) => b.video_id === item.video_id && b.frame_id === item.frame_id && b.task === 'KIS'
+      )
+      if (exists) return state
+      return {
+        ...state,
+        submissionBasket: [...state.submissionBasket, item],
+      }
+    }
+
+    case 'CLEAR_BASKET': {
+      return {
+        ...state,
+        submissionBasket: [],
       }
     }
 
@@ -595,6 +632,20 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         submissionBasket: state.submissionBasket.filter(
           (b) => !(b.video_id === action.payload.video_id && b.frame_id === action.payload.frame_id)
         ),
+      }
+    }
+
+    case 'TOGGLE_KEYBOARD_HELP': {
+      return {
+        ...state,
+        isKeyboardHelpOpen: !state.isKeyboardHelpOpen,
+      }
+    }
+
+    case 'SET_KEYBOARD_HELP': {
+      return {
+        ...state,
+        isKeyboardHelpOpen: action.payload,
       }
     }
 

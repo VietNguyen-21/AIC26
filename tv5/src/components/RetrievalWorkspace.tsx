@@ -30,23 +30,28 @@ import {
   ResetIcon,
   QuestionIcon,
 } from './Icons'
+import { telemetry } from '../utils/telemetry'
 
 interface RetrievalTileProps {
   candidate: SearchCandidate
   isSelected: boolean
   isReference: boolean
+  isInBasket?: boolean
   onSelect: () => void
   onInspect: () => void
   onSetReference: () => void
+  onAddToBasket?: () => void
 }
 
 const RetrievalTile: React.FC<RetrievalTileProps> = ({
   candidate,
   isSelected,
   isReference,
+  isInBasket,
   onSelect,
   onInspect,
   onSetReference,
+  onAddToBasket,
 }) => {
   const formattedRank = candidate.rank < 10 ? `0${candidate.rank}` : `${candidate.rank}`
 
@@ -109,6 +114,42 @@ const RetrievalTile: React.FC<RetrievalTileProps> = ({
         >
           {isReference ? 'Reference ✓' : 'Set Reference'}
         </button>
+
+        {/* Add to Basket Action Button */}
+        {onAddToBasket && (
+          <button
+            type="button"
+            className={`tile-basket-action-btn ${isInBasket ? 'is-in-basket' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation()
+              onAddToBasket()
+            }}
+            title={isInBasket ? 'In Submission Basket' : 'Add to Submission Basket'}
+            aria-label={`Add ${candidate.video_id} frame ${candidate.frame_id} to submission basket`}
+            data-testid={`add-basket-btn-${candidate.rank}`}
+            style={{
+              position: 'absolute',
+              bottom: '8px',
+              right: '8px',
+              padding: '3px 8px',
+              fontSize: '11px',
+              fontWeight: 600,
+              borderRadius: '4px',
+              border: isInBasket ? '1px solid #10b981' : '1px solid rgba(0, 229, 255, 0.4)',
+              background: isInBasket ? 'rgba(16, 185, 129, 0.28)' : 'rgba(10, 14, 23, 0.85)',
+              color: isInBasket ? '#10b981' : '#00e5ff',
+              cursor: 'pointer',
+              zIndex: 2,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            {isInBasket && <CheckIcon size={11} color="#10b981" />}
+            <span>{isInBasket ? 'In Basket' : '+ Basket'}</span>
+          </button>
+        )}
       </div>
 
       {/* Clean Metadata Caption Bar Below Thumbnail */}
@@ -186,10 +227,21 @@ export const RetrievalWorkspace: React.FC = () => {
     trakeValidationStatus,
     queryId,
     taskMode,
+    submissionBasket,
   } = useAppState()
 
   const dispatch = useAppDispatch()
   const isFixture = mode === 'fixture'
+
+  const handleAddKisToBasket = (cand: SearchCandidate) => {
+    dispatch({ type: 'ADD_KIS_TO_BASKET', payload: { candidate: cand } })
+    telemetry.record({
+      action: 'ADD_KIS_TO_BASKET',
+      taskMode: 'KIS',
+      videoId: cand.video_id,
+      frameId: cand.frame_id,
+    })
+  }
 
   // Result Limit Popover State
   const [isLimitOpen, setIsLimitOpen] = useState(false)
@@ -1344,11 +1396,32 @@ export const RetrievalWorkspace: React.FC = () => {
                 validationStatus={trakeValidationStatus}
                 isSearching={isTrakeSearching}
                 mode={mode}
+                isInBasket={Boolean(
+                  trakeVideoId &&
+                  trakeSlots.length > 0 &&
+                  submissionBasket.some(
+                    (b) =>
+                      b.task === 'TRAKE' &&
+                      b.video_id === trakeVideoId &&
+                      JSON.stringify(b.frame_ids) === JSON.stringify(trakeSlots.map((s) => s.frame_id))
+                  )
+                )}
                 onSelectSlot={handleSelectTrakeSlot}
                 onInspectSlot={handleInspectTrakeSlot}
                 onLockSlot={(idx) => dispatch({ type: 'LOCK_TRAKE_SLOT', payload: { event_index: idx } })}
                 onUnlockSlot={(idx) => dispatch({ type: 'UNLOCK_TRAKE_SLOT', payload: { event_index: idx } })}
-                onAddToBasket={() => dispatch({ type: 'ADD_TRAKE_TO_BASKET' })}
+                onAddToBasket={() => {
+                  dispatch({ type: 'ADD_TRAKE_TO_BASKET' })
+                  telemetry.record({
+                    action: 'ADD_TRAKE_TO_BASKET',
+                    taskMode: 'TRAKE',
+                    videoId: trakeVideoId,
+                    details: {
+                      frame_ids: trakeSlots.map((s) => s.frame_id),
+                      event_count: trakeSlots.length,
+                    },
+                  })
+                }}
               />
             )}
           </div>
@@ -1506,9 +1579,13 @@ export const RetrievalWorkspace: React.FC = () => {
                         feedbackReference?.video_id === cand.video_id &&
                         feedbackReference?.frame_id === cand.frame_id
                       }
+                      isInBasket={submissionBasket.some(
+                        (b) => b.video_id === cand.video_id && b.frame_id === cand.frame_id && b.task === 'KIS'
+                      )}
                       onSelect={() => handleSelectCandidate(cand)}
                       onInspect={() => handleInspectCandidate(cand)}
                       onSetReference={() => handleSetReference(cand)}
+                      onAddToBasket={() => handleAddKisToBasket(cand)}
                     />
                   ))}
                 </div>
